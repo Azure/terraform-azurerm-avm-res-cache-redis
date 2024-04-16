@@ -28,17 +28,17 @@ The following requirements are needed by this module:
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (>= 1.9.0, < 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (>= 3.71.0, < 4.0)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.71)
 
-- <a name="requirement_random"></a> [random](#requirement\_random) (>= 3.5.0, < 4.0)
+- <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
 
 ## Providers
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (>= 3.71.0, < 4.0)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.71)
 
-- <a name="provider_random"></a> [random](#provider\_random) (>= 3.5.0, < 4.0)
+- <a name="provider_random"></a> [random](#provider\_random) (~> 3.5)
 
 ## Resources
 
@@ -58,11 +58,49 @@ The following resources are used by this module:
 
 The following input variables are required:
 
+### <a name="input_location"></a> [location](#input\_location)
+
+Description: The Azure region where this and supporting resources should be deployed.
+
+Type: `string`
+
+### <a name="input_maxfragmentationmemory_reserved"></a> [maxfragmentationmemory\_reserved](#input\_maxfragmentationmemory\_reserved)
+
+Description: (Optional) - Value in megabytes reserved to accommodate for memory fragmentation. If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)
+
+Type: `number`
+
 ### <a name="input_name"></a> [name](#input\_name)
 
 Description: The name of the this resource.
 
 Type: `string`
+
+### <a name="input_notify_keyspace_events"></a> [notify\_keyspace\_events](#input\_notify\_keyspace\_events)
+
+Description: (Optional) - Keyspace notifications allow clients to subscribe to pub/sub channels to receive events effecting the Redis data set.
+
+Type: `bool`
+
+### <a name="input_rdb_storage_connection_string"></a> [rdb\_storage\_connection\_string](#input\_rdb\_storage\_connection\_string)
+
+Description: (Optional) - The Connection string to the Storage Account. Only supported for Premium SKUs.
+
+Type: `number`
+
+### <a name="input_redis_configuration"></a> [redis\_configuration](#input\_redis\_configuration)
+
+Description: TODO come back to this and see if Enterprise has similar configuration blocks that can be plumbed up here. Confirm if we need to mark this as sensitive
+
+Type:
+
+```hcl
+object({
+    aof_backup_enabled              = optional(bool, true)
+    aof_storage_connection_string_0 = optional(string)
+    aof_storage_connection_string_1 = optional(string)
+  })
+```
 
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
@@ -70,9 +108,92 @@ Description: The resource group where the resources will be deployed.
 
 Type: `string`
 
+### <a name="input_storage_account_subscription_resource_id"></a> [storage\_account\_subscription\_resource\_id](#input\_storage\_account\_subscription\_resource\_id)
+
+Description: (Optional) - The Azure Resource ID of the subscription containing the storage account.
+
+Type: `string`
+
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_active_directory_authentication_enabled"></a> [active\_directory\_authentication\_enabled](#input\_active\_directory\_authentication\_enabled)
+
+Description: Enable Microsoft Entra (AAD) authentication.  Defaults to `false`.
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_cache_access_policies"></a> [cache\_access\_policies](#input\_cache\_access\_policies)
+
+Description: A map of objects describing one or more Redis cache access policies.
+- `<map key>` - The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+  - `name` - (Required) - The name string of the Redis Cache Access Policy. Changing this forces a new policy to be created.
+  - `permissions - (Required) - A string describing the permissions to be assigned to this Redis Cache Access Policy. Changing this forces a new policy to be created.
+`
+
+Type:
+
+```hcl
+map(object({
+    name        = string
+    permissions = string
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_cache_access_policy_assignments"></a> [cache\_access\_policy\_assignments](#input\_cache\_access\_policy\_assignments)
+
+Description: A map of objects defining one or more Redis Cache access policy assignments.
+- `<map key>` - The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+  - `name` - (Required) - The name of the Redis Cache Access Policy Assignment.  Changing this forces a new policy assignment to be created.
+  - `access_policy_name` - (Required) - The name of the Access Policy to be assigned. Changing this forces a new policy assignment to be created.
+  - `object_id` - (Required) - The principal ID to be assigned to the Access Policy. Changing this forces a new policy assignment to be created.
+  - `object_id_alias` - (Required) - The alias of the principal ID. User-Friendly name for object ID.  Also represents the username for token-based authentication. Changing this forces a new policy assignment to be created.
+
+Type:
+
+```hcl
+map(object({
+    name               = string
+    access_policy_name = string
+    object_id          = string
+    object_id_alias    = string
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_cache_firewall_rules"></a> [cache\_firewall\_rules](#input\_cache\_firewall\_rules)
+
+Description: A map of objects defining one or more Redis Cache firewall rules.
+- `<map key>` - The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+  - `name` - (Required) - The name for the firewall rule
+  - `start_ip` - (Required) - The starting IP Address for clients that are allowed to access the Redis Cache.
+  - `end_ip` - (Required) - The ending IP Address for clients that are allowed to access the Redis Cache.
+
+Type:
+
+```hcl
+map(object({
+    name     = string
+    start_ip = string
+    end_ip   = string
+  }))
+```
+
+Default: `{}`
+
+### <a name="input_capacity"></a> [capacity](#input\_capacity)
+
+Description: (Required) - The size of the Redis Cache to deploy.  Valid values for Basic and Standard skus are 0-6, and for the premium sku is 1-5
+
+Type: `number`
+
+Default: `2`
 
 ### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
 
@@ -90,6 +211,14 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_data_persistence_authentication_method"></a> [data\_persistence\_authentication\_method](#input\_data\_persistence\_authentication\_method)
+
+Description: (Optional) - Preferred authentication method to communicate with the storage account used for data persistence. Possible values are `SAS` and `ManagedIdentity`.
+
+Type: `string`
+
+Default: `"ManagedIdentity"`
 
 ### <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings)
 
@@ -125,6 +254,22 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_enable_authentication"></a> [enable\_authentication](#input\_enable\_authentication)
+
+Description: When set to false the Redis instance will be available without authentication. Defaults to `true`. Requires that a `subnet_id` be specified and there aren't any instances within the subnet with `enable_authentication` set to `true`.  Default
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_enable_non_ssl_port"></a> [enable\_non\_ssl\_port](#input\_enable\_non\_ssl\_port)
+
+Description: (Optional) - Enable the non-ssl port 6379.  Disabled by default
+
+Type: `bool`
+
+Default: `false`
+
 ### <a name="input_enable_telemetry"></a> [enable\_telemetry](#input\_enable\_telemetry)
 
 Description: This variable controls whether or not telemetry is enabled for the module.  
@@ -135,13 +280,25 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_location"></a> [location](#input\_location)
+### <a name="input_linked_redis_caches"></a> [linked\_redis\_caches](#input\_linked\_redis\_caches)
 
-Description: Azure region where the resource should be deployed.  If null, the location will be inferred from the resource group location.
+Description: A map of objects defining one or linked Redis Cache instances to use as secondaries.
+- `<map key>` - The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
+  - linked\_redis\_cache\_resource\_id = (Required) - The Azure resource ID of the Redis Cache that is being linked. Changing this forces a new Redis to be created.
+  - linked\_redis\_cache\_location = (Required) - The location value for the Redis Cache that is being linked. Changing this forces a new Redis to be created.
+  - server\_role - (Required) - The role of the linked Redis Cache.  Possible values are `Primary` and `Secondary`. Changing this forces a new Redis to be created.
 
-Type: `string`
+Type:
 
-Default: `null`
+```hcl
+map(object({
+    linked_redis_cache_resource_id = string
+    linked_redis_cache_location    = string
+    server_role                    = string
+  }))
+```
+
+Default: `{}`
 
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
@@ -172,6 +329,57 @@ object({
 ```
 
 Default: `{}`
+
+### <a name="input_maxmemory_delta"></a> [maxmemory\_delta](#input\_maxmemory\_delta)
+
+Description: (Optional) - Max-memory delta value for this Redis instance.  If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)
+
+Type: `number`
+
+Default: `null`
+
+### <a name="input_maxmemory_policy"></a> [maxmemory\_policy](#input\_maxmemory\_policy)
+
+Description: (Optional) - Max-memory delta value for this Redis instance. Defaults to `volatile-lru`.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_maxmemory_reserved"></a> [maxmemory\_reserved](#input\_maxmemory\_reserved)
+
+Description: Optional) - Value in Megabytes reserved for non-cache usage (e.g. failover).  If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)
+
+Type: `number`
+
+Default: `null`
+
+### <a name="input_minimum_tls_version"></a> [minimum\_tls\_version](#input\_minimum\_tls\_version)
+
+Description: (Optional) - The minimum TLS version.  Possible values are `1.0`, `1.1`, and `1.2`.  Defaults to `1.2`
+
+Type: `string`
+
+Default: `"1.2"`
+
+### <a name="input_patch_schedule"></a> [patch\_schedule](#input\_patch\_schedule)
+
+Description: A set of objects describing the following patch schedule attributes. If no value is configured defaults to an empty set.
+- `day_of_week` - (Optional) - A string value for the day of week to start the patch schedule.  Valid values are `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`, and `Sunday`.
+- `maintenance_window` - (Optional) - A string value following the ISO 8601 timespan system which specifies the length of time the Redis Cache can be updated from the start hour. Defaults to `PT5H`.
+- `start_hour_utc` - (Optional) - The start hour for maintenance in UTC. Possible values range from 0-23.  Defaults to 0.
+
+Type:
+
+```hcl
+set(object({
+    day_of_week        = (optional(string, "Saturday"))
+    maintenance_window = (optional(string, "PT5H"))
+    start_hour_utc     = (optional(number, 0))
+  }))
+```
+
+Default: `[]`
 
 ### <a name="input_private_endpoints"></a> [private\_endpoints](#input\_private\_endpoints)
 
@@ -229,6 +437,46 @@ map(object({
 
 Default: `{}`
 
+### <a name="input_private_static_ip_address"></a> [private\_static\_ip\_address](#input\_private\_static\_ip\_address)
+
+Description: (Optional) - The static IP Address to assign to the Redis Cache when hosted inside a virtual network. Configuring this value implies that the `subnet_id` value has been set.
+
+Type: `string`
+
+Default: `null`
+
+### <a name="input_public_network_access_enabled"></a> [public\_network\_access\_enabled](#input\_public\_network\_access\_enabled)
+
+Description: (Optional) - Identifies whether the public network access is allowed for the Redis Cache. `True` means that both public and private endpoint access is allowed. `False` limits access to the private endpoint only. Defaults to `True`.
+
+Type: `bool`
+
+Default: `true`
+
+### <a name="input_rdb_backup_enabled"></a> [rdb\_backup\_enabled](#input\_rdb\_backup\_enabled)
+
+Description: (Optional) - Is Backup Enabled? Only supported on Premium sku's. Defaults to `false`
+
+Type: `bool`
+
+Default: `false`
+
+### <a name="input_rdb_backup_frequency"></a> [rdb\_backup\_frequency](#input\_rdb\_backup\_frequency)
+
+Description: (Optional) - The Backup Frequency in Minutes. Only supported on Premium SKU's.  Possible values are `15`, `30`, `60`, `360`, `720`, and `1440`.
+
+Type: `number`
+
+Default: `null`
+
+### <a name="input_rdb_backup_max_snapshot_count"></a> [rdb\_backup\_max\_snapshot\_count](#input\_rdb\_backup\_max\_snapshot\_count)
+
+Description: (Optional) - The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.
+
+Type: `number`
+
+Default: `null`
+
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
 Description: A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -257,6 +505,14 @@ map(object({
 ```
 
 Default: `{}`
+
+### <a name="input_sku_name"></a> [sku\_name](#input\_sku\_name)
+
+Description: (Required) - The Redis SKU to use.  Possible values are `Basic`, `Standard`, `Premium`, and `Enterprise`. Note: Downgrading the sku will force new resource creation.
+
+Type: `string`
+
+Default: `"Premium"`
 
 ### <a name="input_tags"></a> [tags](#input\_tags)
 

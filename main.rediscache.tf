@@ -1,0 +1,1 @@
+#create the main azurerm redis resource here

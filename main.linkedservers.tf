@@ -1,0 +1,1 @@
+#create the linked server azurerm resources here
