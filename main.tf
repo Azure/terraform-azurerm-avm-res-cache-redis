@@ -1,15 +1,17 @@
 # TODO: insert resources here.
-data "azurerm_resource_group" "parent" {
-  count = var.location == null ? 1 : 0
 
+# taking reference from this avm - https://github.com/Azure/terraform-azurerm-avm-res-storage-storageaccount/blob/main/README.md#resources
+# creating a data source for the resource group
+data "azurerm_resource_group" "rg" {
   name = var.resource_group_name
 }
 
 # TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-resource "azurerm_resource_group" "TODO" {
-  location = coalesce(var.location, local.resource_group_location)
-  name     = var.name # calling code must supply the name
-}
+# TODO: remove the code block if not required
+# resource "azurerm_resource_group" "TODO" {
+#   location = coalesce(var.location, local.resource_group_location)
+#   name     = var.name # calling code must supply the name
+# }
 
 # required AVM resources interfaces
 resource "azurerm_management_lock" "this" {

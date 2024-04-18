@@ -109,6 +109,7 @@ variable "capacity" {
   type        = number
   default     = 2
   description = "(Required) - The size of the Redis Cache to deploy.  Valid values for Basic and Standard skus are 0-6, and for the premium sku is 1-5"
+  # TODO: is it worth mentioning that this var is not used for Enterprise sku? it is optional anyway so might not be necessary
 }
 
 # required AVM interfaces
@@ -344,7 +345,7 @@ variable "public_network_access_enabled" {
   description = "(Optional) - Identifies whether the public network access is allowed for the Redis Cache. `True` means that both public and private endpoint access is allowed. `False` limits access to the private endpoint only. Defaults to `True`."
 }
 
-#TODO: Research if we want backups to be true. Given this is cache, probably not required. 
+#TODO: Research if we want backups to be true. Given this is cache, probably not required.
 variable "rdb_backup_enabled" {
   type        = bool
   default     = false
