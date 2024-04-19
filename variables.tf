@@ -268,9 +268,9 @@ variable "minimum_tls_version" {
 
 variable "patch_schedule" {
   type = set(object({
-    day_of_week        = (optional(string, "Saturday"))
-    maintenance_window = (optional(string, "PT5H"))
-    start_hour_utc     = (optional(number, 0))
+    day_of_week        = optional(string, "Saturday")
+    maintenance_window = optional(string, "PT5H")
+    start_hour_utc     = optional(number, 0)
   }))
   default     = []
   description = <<DESCRIPTION
