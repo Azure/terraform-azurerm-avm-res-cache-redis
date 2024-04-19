@@ -1,15 +1,6 @@
 #create the main azurerm redis resource here
 # NOTE: the Name used for Redis needs to be globally unique
 
-resource "azurerm_redis_enterprise_cluster" "this" {
-  count               = var.sku_name == "Enterprise" ? 1 : 0
-  name                = var.name
-  resource_group_name = var.resource_group_name
-  location            = var.location
-  sku_name            = var.sku_name
-  minimum_tls_version = var.minimum_tls_version
-}
-
 resource "azurerm_redis_cache" "this" {
   # TODO: what if user wants multiple instances of redis?
   count               = var.sku_name != "Enterprise" ? 1 : 0
