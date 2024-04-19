@@ -2,8 +2,6 @@
 # NOTE: the Name used for Redis needs to be globally unique
 
 resource "azurerm_redis_cache" "this" {
-  # TODO: what if user wants multiple instances of redis?
-  count               = var.sku_name != "Enterprise" ? 1 : 0
   name                = var.name
   location            = var.location
   resource_group_name = var.resource_group_name
@@ -26,9 +24,32 @@ resource "azurerm_redis_cache" "this" {
   public_network_access_enabled = var.public_network_access_enabled
 
   redis_configuration {
-    aof_backup_enabled              = var.redis_configuration.aof_backup_enabled
-    aof_storage_connection_string_0 = var.redis_configuration.aof_storage_connection_string_0
-    aof_storage_connection_string_1 = var.redis_configuration.aof_storage_connection_string_1
+    aof_backup_enabled                      = var.redis_configuration.aof_backup_enabled
+    aof_storage_connection_string_0         = var.redis_configuration.aof_storage_connection_string_0
+    aof_storage_connection_string_1         = var.redis_configuration.aof_storage_connection_string_1
+    enable_authentication                   = var.redis_configuration.enable_authentication
+    active_directory_authentication_enabled = var.redis_configuration.active_directory_authentication_enabled
+    maxmemory_reserved                      = var.redis_configuration.maxmemory_reserved
+    maxmemory_delta                         = var.redis_configuration.maxmemory_delta
+    maxmemory_policy                        = var.redis_configuration.maxmemory_policy
+    maxfragmentationmemory_reserved         = var.redis_configuration.maxfragmentationmemory_reserved
+    data_persistence_authentication_method  = var.redis_configuration.data_persistence_authentication_method
+    rdb_backup_enabled                      = var.redis_configuration.rdb_backup_enabled
+    rdb_backup_frequency                    = var.redis_configuration.rdb_backup_frequency
+    rdb_backup_max_snapshot_count           = var.redis_configuration.rdb_backup_max_snapshot_count
+    rdb_storage_connection_string           = var.redis_configuration.rdb_storage_connection_string
+    storage_account_subscription_id         = var.redis_configuration.storage_account_subscription_id
+    notify_keyspace_events                  = var.redis_configuration.notify_keyspace_events
   }
 
+  tags = var.tags
 }
+
+# some unattended variabls
+# replicas_per_master
+# replicas_per_primary
+# redis_version
+# tenant_settings
+# shard_count
+# subnet_id
+# zones
