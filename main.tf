@@ -1,17 +1,9 @@
 # TODO: insert resources here.
 
-# taking reference from this avm - https://github.com/Azure/terraform-azurerm-avm-res-storage-storageaccount/blob/main/README.md#resources
 # creating a data source for the resource group
 data "azurerm_resource_group" "rg" {
   name = var.resource_group_name
 }
-
-# TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-# TODO: remove the code block if not required
-# resource "azurerm_resource_group" "TODO" {
-#   location = coalesce(var.location, local.resource_group_location)
-#   name     = var.name # calling code must supply the name
-# }
 
 # required AVM resources interfaces
 resource "azurerm_management_lock" "this" {
@@ -19,14 +11,14 @@ resource "azurerm_management_lock" "this" {
 
   lock_level = var.lock.kind
   name       = coalesce(var.lock.name, "lock-${var.name}")
-  scope      = azurerm_resource_group.TODO.id # TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
+  scope      = data.azurerm_resource_group.rg.id
 }
 
 resource "azurerm_role_assignment" "this" {
   for_each = var.role_assignments
 
   principal_id                           = each.value.principal_id
-  scope                                  = azurerm_resource_group.TODO.id # TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
+  scope                                  = data.azurerm_resource_group.rg.id
   condition                              = each.value.condition
   condition_version                      = each.value.condition_version
   delegated_managed_identity_resource_id = each.value.delegated_managed_identity_resource_id
