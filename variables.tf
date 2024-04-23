@@ -18,63 +18,51 @@ variable "name" {
 # Q - this block is not limited to following vars only. Other vars such as "enable_authentication", "active_directory_authentication_enabled", "data_persistence_authentication_method" etc are also part of this block. Should we include them here? or those vars were intentaionally separated and kept outside this block?
 variable "redis_configuration" {
   type = object({
-    aof_backup_enabled                      = optional(bool, false)
+    aof_backup_enabled                      = optional(bool)
     aof_storage_connection_string_0         = optional(string)
     aof_storage_connection_string_1         = optional(string)
-    enable_authentication                   = optional(bool, true)
-    active_directory_authentication_enabled = optional(bool, false)
-    maxmemory_reserved                      = optional(number, null)
-    maxmemory_delta                         = optional(number, null)
-    maxfragmentationmemory_reserved         = optional(number, null)
-    maxmemory_policy                        = optional(string, "volatile-lru")
-    data_persistence_authentication_method  = optional(string, "SAS")
-    rdb_backup_enabled                      = optional(bool, false)
-    rdb_backup_frequency                    = optional(number, null)
-    rdb_backup_max_snapshot_count           = optional(number, null)
-    rdb_storage_connection_string           = optional(string, null)
-    storage_account_subscription_id         = optional(string, null)
-    notify_keyspace_events                  = optional(string, null)
+    enable_authentication                   = optional(bool)
+    active_directory_authentication_enabled = optional(bool)
+    maxmemory_reserved                      = optional(number)
+    maxmemory_delta                         = optional(number)
+    maxfragmentationmemory_reserved         = optional(number)
+    maxmemory_policy                        = optional(string)
+    data_persistence_authentication_method  = optional(string)
+    rdb_backup_enabled                      = optional(bool) #TODO: Research if we want backups to be true. Given this is cache, probably not required.
+    rdb_backup_frequency                    = optional(number)
+    rdb_backup_max_snapshot_count           = optional(number)
+    rdb_storage_connection_string           = optional(string)
+    storage_account_subscription_id         = optional(string)
+    notify_keyspace_events                  = optional(string)
   })
 
-  default = {
+  default = {}
 
-  }
-  # description = <<DESCRIPTION
-  #     aof_backup_enabled                      = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.
-  #     aof_storage_connection_string_0         = (Optional) First Storage Account connection string for AOF persistence.
-  #     aof_storage_connection_string_1         = (Optional) Second Storage Account connection string for AOF persistence.
-  #     enable_authentication                   = (Optional) If set to false, the Redis instance will be accessible without authentication. Defaults to true.
-  #     active_directory_authentication_enabled = (Optional) Enable Microsoft Entra (AAD) authentication. Defaults to false.
-  #     maxmemory_reserved                      = (Optional) Value in megabytes reserved for non-cache usage e.g. failover. Defaults are shown below.
-  #     maxmemory_delta                         = (Optional) The max-memory delta for this Redis instance. Defaults are shown below.
-  #     maxmemory_policy                        = (Optional) How Redis will select what to remove when maxmemory is reached. Defaults to volatile-lru.
-  #     data_persistence_authentication_method  = (Optional) Preferred auth method to communicate to storage account used for data persistence. Possible values are SAS and ManagedIdentity. Defaults to SAS.
-  #     maxfragmentationmemory_reserved         = (Optional) Value in megabytes reserved to accommodate for memory fragmentation. Defaults are shown below.
-  #     rdb_backup_enabled                      = (Optional) Is Backup Enabled? Only supported on Premium SKUs. Defaults to false. Note - If rdb_backup_enabled set to true, rdb_storage_connection_string must also be set.
-  #     rdb_backup_frequency                    = (Optional) The Backup Frequency in Minutes. Only supported on Premium SKUs. Possible values are: 15, 30, 60, 360, 720 and 1440.
-  #     rdb_backup_max_snapshot_count           = (Optional) The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.
-  #     rdb_storage_connection_string           = (Optional) The Connection String to the Storage Account. Only supported for Premium SKUs. In the format: DefaultEndpointsProtocol=https;BlobEndpoint=${azurerm_storage_account.example.primary_blob_endpoint};AccountName=${azurerm_storage_account.example.name};AccountKey=${azurerm_storage_account.example.primary_access_key}.
-  #     storage_account_subscription_id         = (Optional) The ID of the Subscription containing the Storage Account.
-  #     notify_keyspace_events                  = (Optional) Keyspace notifications allows clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way. Reference
-  #  DESCRIPTION
+  description = <<DESCRIPTION
+      aof_backup_enabled                      = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.
+      aof_storage_connection_string_0         = (Optional) First Storage Account connection string for AOF persistence.
+      aof_storage_connection_string_1         = (Optional) Second Storage Account connection string for AOF persistence.
+      enable_authentication                   = (Optional) If set to false, the Redis instance will be accessible without authentication. Defaults to true.
+      active_directory_authentication_enabled = (Optional) Enable Microsoft Entra (AAD) authentication. Defaults to false.
+      maxmemory_reserved                      = (Optional) Value in megabytes reserved for non-cache usage e.g. failover. Defaults are shown below.
+      maxmemory_delta                         = (Optional) The max-memory delta for this Redis instance. Defaults are shown below.
+      maxmemory_policy                        = (Optional) How Redis will select what to remove when maxmemory is reached. Defaults to volatile-lru.
+      data_persistence_authentication_method  = (Optional) Preferred auth method to communicate to storage account used for data persistence. Possible values are SAS and ManagedIdentity. Defaults to SAS.
+      maxfragmentationmemory_reserved         = (Optional) Value in megabytes reserved to accommodate for memory fragmentation. Defaults are shown below.
+      rdb_backup_enabled                      = (Optional) Is Backup Enabled? Only supported on Premium SKUs. Defaults to false. Note - If rdb_backup_enabled set to true, rdb_storage_connection_string must also be set.
+      rdb_backup_frequency                    = (Optional) The Backup Frequency in Minutes. Only supported on Premium SKUs. Possible values are: 15, 30, 60, 360, 720 and 1440.
+      rdb_backup_max_snapshot_count           = (Optional) The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.
+      rdb_storage_connection_string           = (Optional) The Connection String to the Storage Account. Only supported for Premium SKUs. In the format: DefaultEndpointsProtocol=https;BlobEndpoint=\$\{azurerm_storage_account.example.primary_blob_endpoint\};AccountName=\$\{azurerm_storage_account.example.name\};AccountKey=\$\{azurerm_storage_account.example.primary_access_key\}.
+      storage_account_subscription_id         = (Optional) The ID of the Subscription containing the Storage Account.
+      notify_keyspace_events                  = (Optional) Keyspace notifications allows clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way. Reference
+   DESCRIPTION
 }
 
-# variable "enable_authentication" {
-#   type        = bool
-#   default     = true
-#   description = "When set to false the Redis instance will be available without authentication. Defaults to `true`. Requires that a `subnet_id` be specified and there aren't any instances within the subnet with `enable_authentication` set to `true`.  Default"
-# }
 
 variable "resource_group_name" {
   type        = string
   description = "The resource group where the resources will be deployed."
 }
-
-# variable "active_directory_authentication_enabled" {
-#   type        = bool
-#   default     = false
-#   description = "Enable Microsoft Entra (AAD) authentication.  Defaults to `false`."
-# }
 
 variable "cache_access_policies" {
   type = map(object({
@@ -258,24 +246,6 @@ variable "managed_identities" {
   description = "Managed identities to be created for the resource."
 }
 
-# variable "maxmemory_delta" {
-#   type        = number
-#   default     = null
-#   description = "(Optional) - Max-memory delta value for this Redis instance.  If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)"
-# }
-
-# variable "maxmemory_policy" {
-#   type        = string
-#   default     = null
-#   description = "(Optional) - Max-memory delta value for this Redis instance. Defaults to `volatile-lru`."
-# }
-
-# variable "maxmemory_reserved" {
-#   type        = number
-#   default     = null
-#   description = "Optional) - Value in Megabytes reserved for non-cache usage (e.g. failover).  If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)"
-# }
-
 variable "minimum_tls_version" {
   type        = string
   default     = "1.2"
@@ -360,25 +330,6 @@ variable "public_network_access_enabled" {
   default     = true
   description = "(Optional) - Identifies whether the public network access is allowed for the Redis Cache. `True` means that both public and private endpoint access is allowed. `False` limits access to the private endpoint only. Defaults to `True`."
 }
-
-# #TODO: Research if we want backups to be true. Given this is cache, probably not required.
-# variable "rdb_backup_enabled" {
-#   type        = bool
-#   default     = false
-#   description = "(Optional) - Is Backup Enabled? Only supported on Premium sku's. Defaults to `false`"
-# }
-
-# variable "rdb_backup_frequency" {
-#   type        = number
-#   default     = null
-#   description = "(Optional) - The Backup Frequency in Minutes. Only supported on Premium SKU's.  Possible values are `15`, `30`, `60`, `360`, `720`, and `1440`."
-# }
-
-# variable "rdb_backup_max_snapshot_count" {
-#   type        = number
-#   default     = null
-#   description = "(Optional) - The maximum number of snapshots to create as a backup. Only supported for Premium SKUs."
-# }
 
 variable "role_assignments" {
   type = map(object({
