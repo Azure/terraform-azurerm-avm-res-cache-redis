@@ -27,8 +27,8 @@ variable "redis_configuration" {
     maxmemory_delta                         = optional(number)
     maxfragmentationmemory_reserved         = optional(number)
     maxmemory_policy                        = optional(string)
-    data_persistence_authentication_method  = optional(string)
-    rdb_backup_enabled                      = optional(bool) #TODO: Research if we want backups to be true. Given this is cache, probably not required.
+    data_persistence_authentication_method  = optional(string) #TODO: research the managed identity vs. SAS key and determine level of effort required to default to ManagedIdentity as the more secure option, and review what happens if data persistence is not enabled.
+    rdb_backup_enabled                      = optional(bool)   #TODO: Research if we want backups to be true. Given this is cache, probably not required.
     rdb_backup_frequency                    = optional(number)
     rdb_backup_max_snapshot_count           = optional(number)
     rdb_storage_connection_string           = optional(string)
@@ -39,6 +39,7 @@ variable "redis_configuration" {
   default = {}
 
   description = <<DESCRIPTION
+Describes redis configuration block.
       aof_backup_enabled                      = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.
       aof_storage_connection_string_0         = (Optional) First Storage Account connection string for AOF persistence.
       aof_storage_connection_string_1         = (Optional) Second Storage Account connection string for AOF persistence.

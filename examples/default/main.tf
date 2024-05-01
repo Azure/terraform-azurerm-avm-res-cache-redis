@@ -43,6 +43,34 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
+# create a virtual network
+resource "azurerm_virtual_network" "this" {
+  name                = "endppoint-vnet"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+# create a subnet for the private endpoint
+resource "azurerm_subnet" "endpoint" {
+  name                 = "endpoint"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+resource "azurerm_private_dns_zone" "this" {
+  name                = "privatelink.redis.cache.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "this" {
+  name                  = "vnet-link"
+  resource_group_name   = azurerm_resource_group.this.name
+  private_dns_zone_name = azurerm_private_dns_zone.this.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
 # This is the module call
 # Do not specify location here due to the randomization above.
 # Leaving location as `null` will cause the module to use the resource group location
@@ -51,8 +79,17 @@ module "test" {
   source = "../../"
   # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
   # ...
-  enable_telemetry    = var.enable_telemetry                  # see variables.tf
-  name                = module.naming.redis_cache.name_unique # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
+  enable_telemetry              = var.enable_telemetry                  # see variables.tf
+  name                          = module.naming.redis_cache.name_unique # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
+  resource_group_name           = azurerm_resource_group.this.name
+  location                      = azurerm_resource_group.this.location
+  public_network_access_enabled = false
+  private_endpoints = {
+    endpoint1 = {
+      subnet_resource_id            = azurerm_subnet.endpoint.id
+      private_dns_zone_group_name   = "private-dns-zone-group"
+      private_dns_zone_resource_ids = [azurerm_private_dns_zone.this.id]
+
+    }
+  }
 }
