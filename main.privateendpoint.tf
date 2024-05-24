@@ -2,7 +2,7 @@
 resource "azurerm_private_endpoint" "this" {
   for_each = var.private_endpoints
 
-  location                      = coalesce(each.value.location, var.location, local.resource_group_location)
+  location                      = var.location
   name                          = each.value.name != null ? each.value.name : "pe-${var.name}"
   resource_group_name           = each.value.resource_group_name != null ? each.value.resource_group_name : var.resource_group_name
   subnet_id                     = each.value.subnet_resource_id
@@ -12,8 +12,8 @@ resource "azurerm_private_endpoint" "this" {
   private_service_connection {
     is_manual_connection           = false
     name                           = each.value.private_service_connection_name != null ? each.value.private_service_connection_name : "pse-${var.name}"
-    private_connection_resource_id = azurerm_resource_group.TODO.id # TODO: Replace this dummy resource azurerm_resource_group.TODO with your module resource
-    subresource_names              = ["TODO subresource name, see https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-overview#private-link-resource"]
+    private_connection_resource_id = azurerm_redis_cache.this.id
+    subresource_names              = ["redisCache"]
   }
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
@@ -21,8 +21,8 @@ resource "azurerm_private_endpoint" "this" {
     content {
       name               = ip_configuration.value.name
       private_ip_address = ip_configuration.value.private_ip_address
-      member_name        = "TODO subresource name"
-      subresource_name   = "TODO subresource name"
+      member_name        = "Azure redis cache"
+      subresource_name   = "redisCache"
     }
   }
   dynamic "private_dns_zone_group" {
