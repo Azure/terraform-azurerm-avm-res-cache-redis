@@ -1,16 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
-# terraform-azurerm-avm-template
+# terraform-azurerm-avm-res-cache-redis
 
-This is a template repo for Terraform Azure Verified Modules.
-
-Things to do:
-
-1. Set up a GitHub repo environment called `test`.
-1. Configure environment protection rule to ensure that approval is required before deploying to this environment.
-1. Create a user-assigned managed identity in your test subscription.
-1. Create a role assignment for the managed identity on your test subscription, use the minimum required role.
-1. Configure federated identity credentials on the user assigned managed identity. Use the GitHub environment.
-1. Search and update TODOs within the code and remove the TODO comments once complete.
+This module implements the AVM version of the Azure Cache for Redis and supporting resources.  It includes the standard AVM interfaces.
 
 > [!IMPORTANT]
 > As the overall AVM framework is not GA (generally available) yet - the CI framework and test automation is not fully functional and implemented across all supported languages yet - breaking changes are expected, and additional customer feedback is yet to be gathered and incorporated. Hence, modules **MUST NOT** be published at version `1.0.0` or higher at this time.
@@ -47,11 +38,14 @@ The following resources are used by this module:
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
-- [azurerm_resource_group.TODO](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_redis_cache.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redis_cache) (resource)
+- [azurerm_redis_cache_access_policy.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redis_cache_access_policy) (resource)
+- [azurerm_redis_cache_access_policy_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redis_cache_access_policy_assignment) (resource)
+- [azurerm_redis_firewall_rule.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redis_firewall_rule) (resource)
+- [azurerm_redis_linked_server.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redis_linked_server) (resource)
 - [azurerm_resource_group_template_deployment.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
-- [azurerm_resource_group.parent](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/data-sources/resource_group) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -64,43 +58,11 @@ Description: The Azure region where this and supporting resources should be depl
 
 Type: `string`
 
-### <a name="input_maxfragmentationmemory_reserved"></a> [maxfragmentationmemory\_reserved](#input\_maxfragmentationmemory\_reserved)
-
-Description: (Optional) - Value in megabytes reserved to accommodate for memory fragmentation. If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)
-
-Type: `number`
-
 ### <a name="input_name"></a> [name](#input\_name)
 
 Description: The name of the this resource.
 
 Type: `string`
-
-### <a name="input_notify_keyspace_events"></a> [notify\_keyspace\_events](#input\_notify\_keyspace\_events)
-
-Description: (Optional) - Keyspace notifications allow clients to subscribe to pub/sub channels to receive events effecting the Redis data set.
-
-Type: `bool`
-
-### <a name="input_rdb_storage_connection_string"></a> [rdb\_storage\_connection\_string](#input\_rdb\_storage\_connection\_string)
-
-Description: (Optional) - The Connection string to the Storage Account. Only supported for Premium SKUs.
-
-Type: `number`
-
-### <a name="input_redis_configuration"></a> [redis\_configuration](#input\_redis\_configuration)
-
-Description: TODO come back to this and see if Enterprise has similar configuration blocks that can be plumbed up here. Confirm if we need to mark this as sensitive
-
-Type:
-
-```hcl
-object({
-    aof_backup_enabled              = optional(bool, true)
-    aof_storage_connection_string_0 = optional(string)
-    aof_storage_connection_string_1 = optional(string)
-  })
-```
 
 ### <a name="input_resource_group_name"></a> [resource\_group\_name](#input\_resource\_group\_name)
 
@@ -108,23 +70,9 @@ Description: The resource group where the resources will be deployed.
 
 Type: `string`
 
-### <a name="input_storage_account_subscription_resource_id"></a> [storage\_account\_subscription\_resource\_id](#input\_storage\_account\_subscription\_resource\_id)
-
-Description: (Optional) - The Azure Resource ID of the subscription containing the storage account.
-
-Type: `string`
-
 ## Optional Inputs
 
 The following input variables are optional (have default values):
-
-### <a name="input_active_directory_authentication_enabled"></a> [active\_directory\_authentication\_enabled](#input\_active\_directory\_authentication\_enabled)
-
-Description: Enable Microsoft Entra (AAD) authentication.  Defaults to `false`.
-
-Type: `bool`
-
-Default: `false`
 
 ### <a name="input_cache_access_policies"></a> [cache\_access\_policies](#input\_cache\_access\_policies)
 
@@ -212,14 +160,6 @@ object({
 
 Default: `{}`
 
-### <a name="input_data_persistence_authentication_method"></a> [data\_persistence\_authentication\_method](#input\_data\_persistence\_authentication\_method)
-
-Description: (Optional) - Preferred authentication method to communicate with the storage account used for data persistence. Possible values are `SAS` and `ManagedIdentity`.
-
-Type: `string`
-
-Default: `"ManagedIdentity"`
-
 ### <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings)
 
 Description: A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -253,14 +193,6 @@ map(object({
 ```
 
 Default: `{}`
-
-### <a name="input_enable_authentication"></a> [enable\_authentication](#input\_enable\_authentication)
-
-Description: When set to false the Redis instance will be available without authentication. Defaults to `true`. Requires that a `subnet_id` be specified and there aren't any instances within the subnet with `enable_authentication` set to `true`.  Default
-
-Type: `bool`
-
-Default: `true`
 
 ### <a name="input_enable_non_ssl_port"></a> [enable\_non\_ssl\_port](#input\_enable\_non\_ssl\_port)
 
@@ -302,18 +234,21 @@ Default: `{}`
 
 ### <a name="input_lock"></a> [lock](#input\_lock)
 
-Description: The lock level to apply. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`.
+Description: Controls the Resource Lock configuration for this resource. The following properties can be specified:
+
+- `kind` - (Required) The type of lock. Possible values are `\"CanNotDelete\"` and `\"ReadOnly\"`.
+- `name` - (Optional) The name of the lock. If not specified, a name will be generated based on the `kind` value. Changing this forces the creation of a new resource.
 
 Type:
 
 ```hcl
 object({
+    kind = string
     name = optional(string, null)
-    kind = optional(string, "None")
   })
 ```
 
-Default: `{}`
+Default: `null`
 
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
@@ -329,30 +264,6 @@ object({
 ```
 
 Default: `{}`
-
-### <a name="input_maxmemory_delta"></a> [maxmemory\_delta](#input\_maxmemory\_delta)
-
-Description: (Optional) - Max-memory delta value for this Redis instance.  If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)
-
-Type: `number`
-
-Default: `null`
-
-### <a name="input_maxmemory_policy"></a> [maxmemory\_policy](#input\_maxmemory\_policy)
-
-Description: (Optional) - Max-memory delta value for this Redis instance. Defaults to `volatile-lru`.
-
-Type: `string`
-
-Default: `null`
-
-### <a name="input_maxmemory_reserved"></a> [maxmemory\_reserved](#input\_maxmemory\_reserved)
-
-Description: Optional) - Value in Megabytes reserved for non-cache usage (e.g. failover).  If left unset the defaults will be determined by sku. (`Basic:2`, `Standard:50`, `Premium:200`)
-
-Type: `number`
-
-Default: `null`
 
 ### <a name="input_minimum_tls_version"></a> [minimum\_tls\_version](#input\_minimum\_tls\_version)
 
@@ -373,9 +284,9 @@ Type:
 
 ```hcl
 set(object({
-    day_of_week        = (optional(string, "Saturday"))
-    maintenance_window = (optional(string, "PT5H"))
-    start_hour_utc     = (optional(number, 0))
+    day_of_week        = optional(string, "Saturday")
+    maintenance_window = optional(string, "PT5H")
+    start_hour_utc     = optional(number, 0)
   }))
 ```
 
@@ -453,25 +364,70 @@ Type: `bool`
 
 Default: `true`
 
-### <a name="input_rdb_backup_enabled"></a> [rdb\_backup\_enabled](#input\_rdb\_backup\_enabled)
+### <a name="input_redis_configuration"></a> [redis\_configuration](#input\_redis\_configuration)
 
-Description: (Optional) - Is Backup Enabled? Only supported on Premium sku's. Defaults to `false`
+Description: Describes redis configuration block.  
+      aof\_backup\_enabled                      = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.  
+      aof\_storage\_connection\_string\_0         = (Optional) First Storage Account connection string for AOF persistence.  
+      aof\_storage\_connection\_string\_1         = (Optional) Second Storage Account connection string for AOF persistence.  
+      enable\_authentication                   = (Optional) If set to false, the Redis instance will be accessible without authentication. Defaults to true.  
+      active\_directory\_authentication\_enabled = (Optional) Enable Microsoft Entra (AAD) authentication. Defaults to false.  
+      maxmemory\_reserved                      = (Optional) Value in megabytes reserved for non-cache usage e.g. failover. Defaults are shown below.  
+      maxmemory\_delta                         = (Optional) The max-memory delta for this Redis instance. Defaults are shown below.  
+      maxmemory\_policy                        = (Optional) How Redis will select what to remove when maxmemory is reached. Defaults to volatile-lru.  
+      data\_persistence\_authentication\_method  = (Optional) Preferred auth method to communicate to storage account used for data persistence. Possible values are SAS and ManagedIdentity. Defaults to SAS.  
+      maxfragmentationmemory\_reserved         = (Optional) Value in megabytes reserved to accommodate for memory fragmentation. Defaults are shown below.  
+      rdb\_backup\_enabled                      = (Optional) Is Backup Enabled? Only supported on Premium SKUs. Defaults to false. Note - If rdb\_backup\_enabled set to true, rdb\_storage\_connection\_string must also be set.  
+      rdb\_backup\_frequency                    = (Optional) The Backup Frequency in Minutes. Only supported on Premium SKUs. Possible values are: 15, 30, 60, 360, 720 and 1440.  
+      rdb\_backup\_max\_snapshot\_count           = (Optional) The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.  
+      rdb\_storage\_connection\_string           = (Optional) The Connection String to the Storage Account. Only supported for Premium SKUs. In the format: DefaultEndpointsProtocol=https;BlobEndpoint=\$\{azurerm\_storage\_account.example.primary\_blob\_endpoint\};AccountName=\$\{azurerm\_storage\_account.example.name\};AccountKey=\$\{azurerm\_storage\_account.example.primary\_access\_key\}.  
+      storage\_account\_subscription\_id         = (Optional) The ID of the Subscription containing the Storage Account.  
+      notify\_keyspace\_events                  = (Optional) Keyspace notifications allows clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way. Reference
 
-Type: `bool`
+Type:
 
-Default: `false`
+```hcl
+object({
+    aof_backup_enabled                      = optional(bool)
+    aof_storage_connection_string_0         = optional(string)
+    aof_storage_connection_string_1         = optional(string)
+    enable_authentication                   = optional(bool)
+    active_directory_authentication_enabled = optional(bool)
+    maxmemory_reserved                      = optional(number)
+    maxmemory_delta                         = optional(number)
+    maxfragmentationmemory_reserved         = optional(number)
+    maxmemory_policy                        = optional(string)
+    data_persistence_authentication_method  = optional(string) #TODO: research the managed identity vs. SAS key and determine level of effort required to default to ManagedIdentity as the more secure option, and review what happens if data persistence is not enabled.
+    rdb_backup_enabled                      = optional(bool)   #TODO: Research if we want backups to be true. Given this is cache, probably not required.
+    rdb_backup_frequency                    = optional(number)
+    rdb_backup_max_snapshot_count           = optional(number)
+    rdb_storage_connection_string           = optional(string)
+    storage_account_subscription_id         = optional(string)
+    notify_keyspace_events                  = optional(string)
+  })
+```
 
-### <a name="input_rdb_backup_frequency"></a> [rdb\_backup\_frequency](#input\_rdb\_backup\_frequency)
+Default: `{}`
 
-Description: (Optional) - The Backup Frequency in Minutes. Only supported on Premium SKU's.  Possible values are `15`, `30`, `60`, `360`, `720`, and `1440`.
+### <a name="input_redis_version"></a> [redis\_version](#input\_redis\_version)
+
+Description: (Optional) Redis version.  Only major version needed.  Valid values are: `4` and `6`
 
 Type: `number`
 
 Default: `null`
 
-### <a name="input_rdb_backup_max_snapshot_count"></a> [rdb\_backup\_max\_snapshot\_count](#input\_rdb\_backup\_max\_snapshot\_count)
+### <a name="input_replicas_per_master"></a> [replicas\_per\_master](#input\_replicas\_per\_master)
 
-Description: (Optional) - The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.
+Description: (Optional) - The quantity of replicas to create per master for this Redis Cache.
+
+Type: `number`
+
+Default: `null`
+
+### <a name="input_replicas_per_primary"></a> [replicas\_per\_primary](#input\_replicas\_per\_primary)
+
+Description: (Optional) Quantity of replicas to create per primary for this Redis Cache.
 
 Type: `number`
 
@@ -479,14 +435,16 @@ Default: `null`
 
 ### <a name="input_role_assignments"></a> [role\_assignments](#input\_role\_assignments)
 
-Description: A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+Description: A map of role assignments to create on the <RESOURCE>. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
 - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
 - `principal_id` - The ID of the principal to assign the role to.
-- `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
-- `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+- `description` - (Optional) The description of the role assignment.
+- `skip_service_principal_aad_check` - (Optional) If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+- `condition` - (Optional) The condition which will be used to scope the role assignment.
+- `condition_version` - (Optional) The version of the condition syntax. Leave as `null` if you are not using a condition, if you are then valid values are '2.0'.
+- `delegated_managed_identity_resource_id` - (Optional) The delegated Azure Resource Id which contains a Managed Identity. Changing this forces a new resource to be created. This field is only used in cross-tenant scenario.
+- `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating role assignments if the principal creating the assignment is constrained by ABAC rules that filters on the PrincipalType attribute.
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 
@@ -501,10 +459,19 @@ map(object({
     condition                              = optional(string, null)
     condition_version                      = optional(string, null)
     delegated_managed_identity_resource_id = optional(string, null)
+    principal_type                         = optional(string, null)
   }))
 ```
 
 Default: `{}`
+
+### <a name="input_shard_count"></a> [shard\_count](#input\_shard\_count)
+
+Description: (Optional) - Only available when using the `Premium` SKU. The number of shards to create on the Redis Cluster.
+
+Type: `number`
+
+Default: `null`
 
 ### <a name="input_sku_name"></a> [sku\_name](#input\_sku\_name)
 
@@ -514,13 +481,37 @@ Type: `string`
 
 Default: `"Premium"`
 
+### <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id)
+
+Description: (Optional) - Only available when using the `Premium` SKU. The ID of the Subnet within which the Redis Cache should be deployed. This Subnet must only contain Azure Cache for Redis instances without any other type of resources.  Changing this forces a new resource to be created.
+
+Type: `string`
+
+Default: `null`
+
 ### <a name="input_tags"></a> [tags](#input\_tags)
 
-Description: The map of tags to be applied to the resource
+Description: (Optional) Tags of the resource.
 
-Type: `map(any)`
+Type: `map(string)`
+
+Default: `null`
+
+### <a name="input_tenent_settings"></a> [tenent\_settings](#input\_tenent\_settings)
+
+Description: (Optional) A mapping of tenant settings to assign to the resource.
+
+Type: `map(string)`
 
 Default: `{}`
+
+### <a name="input_zones"></a> [zones](#input\_zones)
+
+Description: (Optional) - Specifies a list of Availability Zones in which this Redis Cache should be located.  Changing this forces a new Redis Cache to be created.
+
+Type: `list(string)`
+
+Default: `[]`
 
 ## Outputs
 
@@ -533,6 +524,10 @@ Description: A map of private endpoints. The map key is the supplied input to va
 ### <a name="output_resource"></a> [resource](#output\_resource)
 
 Description: This is the full output for the resource.
+
+### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
+
+Description: The resource id of the redis cache resource.
 
 ## Modules
 

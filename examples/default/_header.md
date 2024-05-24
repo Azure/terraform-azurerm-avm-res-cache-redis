@@ -1,3 +1,3 @@
 # Default example
 
-This deploys the module in its simplest form.
+This deploys the Azure Cache for Redis module in its simplest form.

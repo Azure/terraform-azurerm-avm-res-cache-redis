@@ -9,3 +9,8 @@ output "resource" {
   description = "This is the full output for the resource."
   value       = azurerm_redis_cache.this
 }
+
+output "resource_id" {
+  description = "The resource id of the redis cache resource."
+  value       = azurerm_redis_cache.this.id
+}

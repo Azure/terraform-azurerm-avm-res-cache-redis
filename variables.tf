@@ -14,52 +14,6 @@ variable "name" {
   }
 }
 
-#TODO come back to this and see if Enterprise has similar configuration blocks that can be plumbed up here. Confirm if we need to mark this as sensitive
-# Q - this block is not limited to following vars only. Other vars such as "enable_authentication", "active_directory_authentication_enabled", "data_persistence_authentication_method" etc are also part of this block. Should we include them here? or those vars were intentaionally separated and kept outside this block?
-variable "redis_configuration" {
-  type = object({
-    aof_backup_enabled                      = optional(bool)
-    aof_storage_connection_string_0         = optional(string)
-    aof_storage_connection_string_1         = optional(string)
-    enable_authentication                   = optional(bool)
-    active_directory_authentication_enabled = optional(bool)
-    maxmemory_reserved                      = optional(number)
-    maxmemory_delta                         = optional(number)
-    maxfragmentationmemory_reserved         = optional(number)
-    maxmemory_policy                        = optional(string)
-    data_persistence_authentication_method  = optional(string) #TODO: research the managed identity vs. SAS key and determine level of effort required to default to ManagedIdentity as the more secure option, and review what happens if data persistence is not enabled.
-    rdb_backup_enabled                      = optional(bool)   #TODO: Research if we want backups to be true. Given this is cache, probably not required.
-    rdb_backup_frequency                    = optional(number)
-    rdb_backup_max_snapshot_count           = optional(number)
-    rdb_storage_connection_string           = optional(string)
-    storage_account_subscription_id         = optional(string)
-    notify_keyspace_events                  = optional(string)
-  })
-
-  default = {}
-
-  description = <<DESCRIPTION
-Describes redis configuration block.
-      aof_backup_enabled                      = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.
-      aof_storage_connection_string_0         = (Optional) First Storage Account connection string for AOF persistence.
-      aof_storage_connection_string_1         = (Optional) Second Storage Account connection string for AOF persistence.
-      enable_authentication                   = (Optional) If set to false, the Redis instance will be accessible without authentication. Defaults to true.
-      active_directory_authentication_enabled = (Optional) Enable Microsoft Entra (AAD) authentication. Defaults to false.
-      maxmemory_reserved                      = (Optional) Value in megabytes reserved for non-cache usage e.g. failover. Defaults are shown below.
-      maxmemory_delta                         = (Optional) The max-memory delta for this Redis instance. Defaults are shown below.
-      maxmemory_policy                        = (Optional) How Redis will select what to remove when maxmemory is reached. Defaults to volatile-lru.
-      data_persistence_authentication_method  = (Optional) Preferred auth method to communicate to storage account used for data persistence. Possible values are SAS and ManagedIdentity. Defaults to SAS.
-      maxfragmentationmemory_reserved         = (Optional) Value in megabytes reserved to accommodate for memory fragmentation. Defaults are shown below.
-      rdb_backup_enabled                      = (Optional) Is Backup Enabled? Only supported on Premium SKUs. Defaults to false. Note - If rdb_backup_enabled set to true, rdb_storage_connection_string must also be set.
-      rdb_backup_frequency                    = (Optional) The Backup Frequency in Minutes. Only supported on Premium SKUs. Possible values are: 15, 30, 60, 360, 720 and 1440.
-      rdb_backup_max_snapshot_count           = (Optional) The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.
-      rdb_storage_connection_string           = (Optional) The Connection String to the Storage Account. Only supported for Premium SKUs. In the format: DefaultEndpointsProtocol=https;BlobEndpoint=\$\{azurerm_storage_account.example.primary_blob_endpoint\};AccountName=\$\{azurerm_storage_account.example.name\};AccountKey=\$\{azurerm_storage_account.example.primary_access_key\}.
-      storage_account_subscription_id         = (Optional) The ID of the Subscription containing the Storage Account.
-      notify_keyspace_events                  = (Optional) Keyspace notifications allows clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way. Reference
-   DESCRIPTION
-}
-
-
 variable "resource_group_name" {
   type        = string
   description = "The resource group where the resources will be deployed."
@@ -119,7 +73,6 @@ variable "capacity" {
   type        = number
   default     = 2
   description = "(Required) - The size of the Redis Cache to deploy.  Valid values for Basic and Standard skus are 0-6, and for the premium sku is 1-5"
-  # TODO: is it worth mentioning that this var is not used for Enterprise sku? it is optional anyway so might not be necessary
 }
 
 # required AVM interfaces
@@ -135,13 +88,6 @@ variable "customer_managed_key" {
   default     = {}
   description = "Customer managed keys that should be associated with the resource."
 }
-
-#TODO: research the managed identity vs. SAS key and determine level of effort required to default to ManagedIdentity as the more secure option, and review what happens if data persistence is not enabled.
-# variable "data_persistence_authentication_method" {
-#   type        = string
-#   default     = "ManagedIdentity"
-#   description = "(Optional) - Preferred authentication method to communicate with the storage account used for data persistence. Possible values are `SAS` and `ManagedIdentity`."
-# }
 
 variable "diagnostic_settings" {
   type = map(object({
@@ -188,7 +134,6 @@ DESCRIPTION
   }
 }
 
-
 variable "enable_non_ssl_port" {
   type        = bool
   default     = false
@@ -224,16 +169,20 @@ DESCRIPTION
 
 variable "lock" {
   type = object({
+    kind = string
     name = optional(string, null)
-    kind = optional(string, "None")
   })
-  default     = {}
-  description = "The lock level to apply. Default is `None`. Possible values are `None`, `CanNotDelete`, and `ReadOnly`."
-  nullable    = false
+  default     = null
+  description = <<DESCRIPTION
+Controls the Resource Lock configuration for this resource. The following properties can be specified:
+
+- `kind` - (Required) The type of lock. Possible values are `\"CanNotDelete\"` and `\"ReadOnly\"`.
+- `name` - (Optional) The name of the lock. If not specified, a name will be generated based on the `kind` value. Changing this forces the creation of a new resource.
+DESCRIPTION
 
   validation {
-    condition     = contains(["CanNotDelete", "ReadOnly", "None"], var.lock.kind)
-    error_message = "The lock level must be one of: 'None', 'CanNotDelete', or 'ReadOnly'."
+    condition     = var.lock != null ? contains(["CanNotDelete", "ReadOnly"], var.lock.kind) : true
+    error_message = "Lock kind must be either `\"CanNotDelete\"` or `\"ReadOnly\"`."
   }
 }
 
@@ -332,6 +281,67 @@ variable "public_network_access_enabled" {
   description = "(Optional) - Identifies whether the public network access is allowed for the Redis Cache. `True` means that both public and private endpoint access is allowed. `False` limits access to the private endpoint only. Defaults to `True`."
 }
 
+#TODO come back to this and see if Enterprise has similar configuration blocks that can be plumbed up here. Confirm if we need to mark this as sensitive
+# Q - this block is not limited to following vars only. Other vars such as "enable_authentication", "active_directory_authentication_enabled", "data_persistence_authentication_method" etc are also part of this block. Should we include them here? or those vars were intentaionally separated and kept outside this block?
+variable "redis_configuration" {
+  type = object({
+    aof_backup_enabled                      = optional(bool)
+    aof_storage_connection_string_0         = optional(string)
+    aof_storage_connection_string_1         = optional(string)
+    enable_authentication                   = optional(bool)
+    active_directory_authentication_enabled = optional(bool)
+    maxmemory_reserved                      = optional(number)
+    maxmemory_delta                         = optional(number)
+    maxfragmentationmemory_reserved         = optional(number)
+    maxmemory_policy                        = optional(string)
+    data_persistence_authentication_method  = optional(string) #TODO: research the managed identity vs. SAS key and determine level of effort required to default to ManagedIdentity as the more secure option, and review what happens if data persistence is not enabled.
+    rdb_backup_enabled                      = optional(bool)   #TODO: Research if we want backups to be true. Given this is cache, probably not required.
+    rdb_backup_frequency                    = optional(number)
+    rdb_backup_max_snapshot_count           = optional(number)
+    rdb_storage_connection_string           = optional(string)
+    storage_account_subscription_id         = optional(string)
+    notify_keyspace_events                  = optional(string)
+  })
+  default     = {}
+  description = <<DESCRIPTION
+Describes redis configuration block.
+      aof_backup_enabled                      = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.
+      aof_storage_connection_string_0         = (Optional) First Storage Account connection string for AOF persistence.
+      aof_storage_connection_string_1         = (Optional) Second Storage Account connection string for AOF persistence.
+      enable_authentication                   = (Optional) If set to false, the Redis instance will be accessible without authentication. Defaults to true.
+      active_directory_authentication_enabled = (Optional) Enable Microsoft Entra (AAD) authentication. Defaults to false.
+      maxmemory_reserved                      = (Optional) Value in megabytes reserved for non-cache usage e.g. failover. Defaults are shown below.
+      maxmemory_delta                         = (Optional) The max-memory delta for this Redis instance. Defaults are shown below.
+      maxmemory_policy                        = (Optional) How Redis will select what to remove when maxmemory is reached. Defaults to volatile-lru.
+      data_persistence_authentication_method  = (Optional) Preferred auth method to communicate to storage account used for data persistence. Possible values are SAS and ManagedIdentity. Defaults to SAS.
+      maxfragmentationmemory_reserved         = (Optional) Value in megabytes reserved to accommodate for memory fragmentation. Defaults are shown below.
+      rdb_backup_enabled                      = (Optional) Is Backup Enabled? Only supported on Premium SKUs. Defaults to false. Note - If rdb_backup_enabled set to true, rdb_storage_connection_string must also be set.
+      rdb_backup_frequency                    = (Optional) The Backup Frequency in Minutes. Only supported on Premium SKUs. Possible values are: 15, 30, 60, 360, 720 and 1440.
+      rdb_backup_max_snapshot_count           = (Optional) The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.
+      rdb_storage_connection_string           = (Optional) The Connection String to the Storage Account. Only supported for Premium SKUs. In the format: DefaultEndpointsProtocol=https;BlobEndpoint=\$\{azurerm_storage_account.example.primary_blob_endpoint\};AccountName=\$\{azurerm_storage_account.example.name\};AccountKey=\$\{azurerm_storage_account.example.primary_access_key\}.
+      storage_account_subscription_id         = (Optional) The ID of the Subscription containing the Storage Account.
+      notify_keyspace_events                  = (Optional) Keyspace notifications allows clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way. Reference
+   DESCRIPTION
+}
+
+variable "redis_version" {
+  type        = number
+  default     = null
+  description = "(Optional) Redis version.  Only major version needed.  Valid values are: `4` and `6`"
+}
+
+variable "replicas_per_master" {
+  type        = number
+  default     = null
+  description = "(Optional) - The quantity of replicas to create per master for this Redis Cache."
+}
+
+variable "replicas_per_primary" {
+  type        = number
+  default     = null
+  description = "(Optional) Quantity of replicas to create per primary for this Redis Cache."
+}
+
 variable "role_assignments" {
   type = map(object({
     role_definition_id_or_name             = string
@@ -341,20 +351,30 @@ variable "role_assignments" {
     condition                              = optional(string, null)
     condition_version                      = optional(string, null)
     delegated_managed_identity_resource_id = optional(string, null)
+    principal_type                         = optional(string, null)
   }))
   default     = {}
   description = <<DESCRIPTION
-A map of role assignments to create on this resource. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
+A map of role assignments to create on the <RESOURCE>. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
 
 - `role_definition_id_or_name` - The ID or name of the role definition to assign to the principal.
 - `principal_id` - The ID of the principal to assign the role to.
-- `description` - The description of the role assignment.
-- `skip_service_principal_aad_check` - If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
-- `condition` - The condition which will be used to scope the role assignment.
-- `condition_version` - The version of the condition syntax. Valid values are '2.0'.
+- `description` - (Optional) The description of the role assignment.
+- `skip_service_principal_aad_check` - (Optional) If set to true, skips the Azure Active Directory check for the service principal in the tenant. Defaults to false.
+- `condition` - (Optional) The condition which will be used to scope the role assignment.
+- `condition_version` - (Optional) The version of the condition syntax. Leave as `null` if you are not using a condition, if you are then valid values are '2.0'.
+- `delegated_managed_identity_resource_id` - (Optional) The delegated Azure Resource Id which contains a Managed Identity. Changing this forces a new resource to be created. This field is only used in cross-tenant scenario.
+- `principal_type` - (Optional) The type of the `principal_id`. Possible values are `User`, `Group` and `ServicePrincipal`. It is necessary to explicitly set this attribute when creating role assignments if the principal creating the assignment is constrained by ABAC rules that filters on the PrincipalType attribute.
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 DESCRIPTION
+  nullable    = false
+}
+
+variable "shard_count" {
+  type        = number
+  default     = null
+  description = "(Optional) - Only available when using the `Premium` SKU. The number of shards to create on the Redis Cluster."
 }
 
 variable "sku_name" {
@@ -363,9 +383,27 @@ variable "sku_name" {
   description = "(Required) - The Redis SKU to use.  Possible values are `Basic`, `Standard`, `Premium`, and `Enterprise`. Note: Downgrading the sku will force new resource creation." #TODO validate whether we can merge Open Source and Premium skus
 }
 
+variable "subnet_id" {
+  type        = string
+  default     = null
+  description = "(Optional) - Only available when using the `Premium` SKU. The ID of the Subnet within which the Redis Cache should be deployed. This Subnet must only contain Azure Cache for Redis instances without any other type of resources.  Changing this forces a new resource to be created."
+}
+
 # tflint-ignore: terraform_unused_declarations
 variable "tags" {
-  type        = map(any)
+  type        = map(string)
+  default     = null
+  description = "(Optional) Tags of the resource."
+}
+
+variable "tenent_settings" {
+  type        = map(string)
   default     = {}
-  description = "The map of tags to be applied to the resource"
+  description = "(Optional) A mapping of tenant settings to assign to the resource."
+}
+
+variable "zones" {
+  type        = list(string)
+  default     = []
+  description = "(Optional) - Specifies a list of Availability Zones in which this Redis Cache should be located.  Changing this forces a new Redis Cache to be created."
 }

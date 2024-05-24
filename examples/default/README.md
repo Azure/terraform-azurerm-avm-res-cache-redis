@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the module in its simplest form.
+This deploys the Azure Cache for Redis module in its simplest form.
 
 ```hcl
 terraform {
@@ -19,7 +19,11 @@ terraform {
 }
 
 provider "azurerm" {
-  features {}
+  features {
+    resource_group {
+      prevent_deletion_if_contains_resources = false
+    }
+  }
 }
 
 
@@ -49,17 +53,52 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# This is the module call
-# Do not specify location here due to the randomization above.
-# Leaving location as `null` will cause the module to use the resource group location
-# with a data source.
-module "test" {
-  source = "../../"
-  # source             = "Azure/avm-<res/ptn>-<name>/azurerm"
-  # ...
-  enable_telemetry    = var.enable_telemetry # see variables.tf
-  name                = "TODO"               # TODO update with module.naming.<RESOURCE_TYPE>.name_unique
+# create a virtual network
+resource "azurerm_virtual_network" "this" {
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.this.location
+  name                = "endppoint-vnet"
   resource_group_name = azurerm_resource_group.this.name
+}
+
+# create a subnet for the private endpoint
+resource "azurerm_subnet" "endpoint" {
+  address_prefixes     = ["10.0.2.0/24"]
+  name                 = "endpoint"
+  resource_group_name  = azurerm_resource_group.this.name
+  virtual_network_name = azurerm_virtual_network.this.name
+}
+
+resource "azurerm_private_dns_zone" "this" {
+  name                = "privatelink.redis.cache.windows.net"
+  resource_group_name = azurerm_resource_group.this.name
+}
+
+resource "azurerm_private_dns_zone_virtual_network_link" "this" {
+  name                  = "vnet-link"
+  private_dns_zone_name = azurerm_private_dns_zone.this.name
+  resource_group_name   = azurerm_resource_group.this.name
+  virtual_network_id    = azurerm_virtual_network.this.id
+}
+
+# This is the module call
+module "default" {
+  source = "../../"
+  # source             = "Azure/avm-res-cache-redis/azurerm"
+  # version            = "0.1.0"
+
+  enable_telemetry              = var.enable_telemetry
+  name                          = module.naming.redis_cache.name_unique
+  resource_group_name           = azurerm_resource_group.this.name
+  location                      = azurerm_resource_group.this.location
+  public_network_access_enabled = false
+  private_endpoints = {
+    endpoint1 = {
+      subnet_resource_id            = azurerm_subnet.endpoint.id
+      private_dns_zone_group_name   = "private-dns-zone-group"
+      private_dns_zone_resource_ids = [azurerm_private_dns_zone.this.id]
+    }
+  }
 }
 ```
 
@@ -86,7 +125,11 @@ The following providers are used by this module:
 
 The following resources are used by this module:
 
+- [azurerm_private_dns_zone.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
+- [azurerm_private_dns_zone_virtual_network_link.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
+- [azurerm_subnet.endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
+- [azurerm_virtual_network.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -116,6 +159,12 @@ No outputs.
 
 The following Modules are called:
 
+### <a name="module_default"></a> [default](#module\_default)
+
+Source: ../../
+
+Version:
+
 ### <a name="module_naming"></a> [naming](#module\_naming)
 
 Source: Azure/naming/azurerm
@@ -127,12 +176,6 @@ Version: >= 0.3.0
 Source: Azure/regions/azurerm
 
 Version: >= 0.3.0
-
-### <a name="module_test"></a> [test](#module\_test)
-
-Source: ../../
-
-Version:
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection

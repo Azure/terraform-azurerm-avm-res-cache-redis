@@ -1,11 +1,25 @@
 # TODO: insert locals here.
 locals {
-  role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
-  redis_cache_family                 = var.sku_name == "Basic" || var.sku_name == "Standard" ? "C" : "P"
-}
-
-# Private endpoint application security group associations
-locals {
+  managed_identities = {
+    system_assigned_user_assigned = (var.managed_identities.system_assigned || length(var.managed_identities.user_assigned_resource_ids) > 0) ? {
+      this = {
+        type                       = var.managed_identities.system_assigned && length(var.managed_identities.user_assigned_resource_ids) > 0 ? "SystemAssigned, UserAssigned" : length(var.managed_identities.user_assigned_resource_ids) > 0 ? "UserAssigned" : "SystemAssigned"
+        user_assigned_resource_ids = var.managed_identities.user_assigned_resource_ids
+      }
+    } : {}
+    system_assigned = var.managed_identities.system_assigned ? {
+      this = {
+        type = "SystemAssigned"
+      }
+    } : {}
+    user_assigned = length(var.managed_identities.user_assigned_resource_ids) > 0 ? {
+      this = {
+        type                       = "UserAssigned"
+        user_assigned_resource_ids = var.managed_identities.user_assigned_resource_ids
+      }
+    } : {}
+  }
+  # Private endpoint application security group associations
   private_endpoint_application_security_group_associations = { for assoc in flatten([
     for pe_k, pe_v in var.private_endpoints : [
       for asg_k, asg_v in pe_v.application_security_group_associations : {
@@ -15,4 +29,6 @@ locals {
       }
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
+  redis_cache_family                 = var.sku_name == "Basic" || var.sku_name == "Standard" ? "C" : "P"
+  role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }
