@@ -2,6 +2,7 @@
 variable "location" {
   type        = string
   description = "The Azure region where this and supporting resources should be deployed."
+  nullable    = false
 }
 
 variable "name" {
@@ -75,20 +76,6 @@ variable "capacity" {
   description = "(Required) - The size of the Redis Cache to deploy.  Valid values for Basic and Standard skus are 0-6, and for the premium sku is 1-5"
 }
 
-# required AVM interfaces
-# remove only if not supported by the resource
-# tflint-ignore: terraform_unused_declarations
-variable "customer_managed_key" {
-  type = object({
-    key_vault_resource_id              = optional(string)
-    key_name                           = optional(string)
-    key_version                        = optional(string, null)
-    user_assigned_identity_resource_id = optional(string, null)
-  })
-  default     = {}
-  description = "Customer managed keys that should be associated with the resource."
-}
-
 variable "diagnostic_settings" {
   type = map(object({
     name                                     = optional(string, null)
@@ -119,10 +106,6 @@ A map of diagnostic settings to create on the Key Vault. The map key is delibera
 DESCRIPTION
   nullable    = false
 
-  validation {
-    condition     = alltrue([for _, v in var.diagnostic_settings : contains(["Dedicated", "AzureDiagnostics"], v.log_analytics_destination_type)])
-    error_message = "Log analytics destination type must be one of: 'Dedicated', 'AzureDiagnostics'."
-  }
   validation {
     condition = alltrue(
       [
@@ -193,7 +176,13 @@ variable "managed_identities" {
     user_assigned_resource_ids = optional(set(string), [])
   })
   default     = {}
-  description = "Managed identities to be created for the resource."
+  description = <<DESCRIPTION
+Controls the Managed Identity configuration on this resource. The following properties can be specified:
+
+- `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
+- `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
+DESCRIPTION
+  nullable    = false
 }
 
 variable "minimum_tls_version" {
@@ -405,6 +394,6 @@ variable "tenent_settings" {
 
 variable "zones" {
   type        = list(string)
-  default     = []
+  default     = ["1", "2", "3"]
   description = "(Optional) - Specifies a list of Availability Zones in which this Redis Cache should be located.  Changing this forces a new Redis Cache to be created."
 }

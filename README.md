@@ -17,9 +17,7 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.5.0)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (>= 1.9.0, < 2.0)
-
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.71)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.105)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
 
@@ -27,7 +25,7 @@ The following requirements are needed by this module:
 
 The following providers are used by this module:
 
-- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.71)
+- <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.105)
 
 - <a name="provider_random"></a> [random](#provider\_random) (~> 3.5)
 
@@ -36,6 +34,7 @@ The following providers are used by this module:
 The following resources are used by this module:
 
 - [azurerm_management_lock.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/management_lock) (resource)
+- [azurerm_monitor_diagnostic_setting.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/monitor_diagnostic_setting) (resource)
 - [azurerm_private_endpoint.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint) (resource)
 - [azurerm_private_endpoint_application_security_group_association.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_endpoint_application_security_group_association) (resource)
 - [azurerm_redis_cache.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/redis_cache) (resource)
@@ -143,23 +142,6 @@ Type: `number`
 
 Default: `2`
 
-### <a name="input_customer_managed_key"></a> [customer\_managed\_key](#input\_customer\_managed\_key)
-
-Description: Customer managed keys that should be associated with the resource.
-
-Type:
-
-```hcl
-object({
-    key_vault_resource_id              = optional(string)
-    key_name                           = optional(string)
-    key_version                        = optional(string, null)
-    user_assigned_identity_resource_id = optional(string, null)
-  })
-```
-
-Default: `{}`
-
 ### <a name="input_diagnostic_settings"></a> [diagnostic\_settings](#input\_diagnostic\_settings)
 
 Description: A map of diagnostic settings to create on the Key Vault. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
@@ -252,7 +234,10 @@ Default: `null`
 
 ### <a name="input_managed_identities"></a> [managed\_identities](#input\_managed\_identities)
 
-Description: Managed identities to be created for the resource.
+Description: Controls the Managed Identity configuration on this resource. The following properties can be specified:
+
+- `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
+- `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
 
 Type:
 
@@ -512,7 +497,15 @@ Description: (Optional) - Specifies a list of Availability Zones in which this R
 
 Type: `list(string)`
 
-Default: `[]`
+Default:
+
+```json
+[
+  "1",
+  "2",
+  "3"
+]
+```
 
 ## Outputs
 

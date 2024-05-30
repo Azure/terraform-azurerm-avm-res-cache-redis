@@ -55,3 +55,23 @@ resource "azurerm_redis_cache" "this" {
     storage_account_subscription_id         = var.redis_configuration.storage_account_subscription_id
   }
 }
+
+
+resource "azurerm_management_lock" "this" {
+  count = var.lock != null ? 1 : 0
+
+  lock_level = var.lock.kind
+  name       = coalesce(var.lock.name, "lock-${var.lock.kind}")
+  scope      = azurerm_redis_cache.this.id
+  notes      = var.lock.kind == "CanNotDelete" ? "Cannot delete the resource or its child resources." : "Cannot delete or modify the resource or its child resources."
+
+  depends_on = [
+    azurerm_redis_cache.this,
+    azurerm_monitor_diagnostic_setting.this,
+    azurerm_redis_cache_access_policy.this,
+    azurerm_redis_cache_access_policy_assignment.this,
+    azurerm_redis_firewall_rule.this,
+    azurerm_redis_linked_server.this,
+    azurerm_role_assignment.this
+  ]
+}

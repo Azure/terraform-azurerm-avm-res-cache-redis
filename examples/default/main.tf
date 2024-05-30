@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 3.7.0, < 4.0.0"
+      version = "~> 3.105"
     }
     random = {
       source  = "hashicorp/random"
@@ -20,6 +20,11 @@ provider "azurerm" {
   }
 }
 
+locals {
+  tags = {
+    scenario = "default"
+  }
+}
 
 ## Section to provide a random Azure region for the resource group
 # This allows us to randomize the region for the resource group.
@@ -75,6 +80,15 @@ resource "azurerm_private_dns_zone_virtual_network_link" "this" {
   virtual_network_id    = azurerm_virtual_network.this.id
 }
 
+resource "azurerm_log_analytics_workspace" "this_workspace" {
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.log_analytics_workspace.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  retention_in_days   = 30
+  sku                 = "PerGB2018"
+  tags                = local.tags
+}
+
 # This is the module call
 module "default" {
   source = "../../"
@@ -93,4 +107,27 @@ module "default" {
       private_dns_zone_resource_ids = [azurerm_private_dns_zone.this.id]
     }
   }
+
+  diagnostic_settings = {
+    diag_setting_1 = {
+      name                           = "diagSetting1"
+      log_groups                     = ["allLogs"]
+      metric_categories              = ["AllMetrics"]
+      log_analytics_destination_type = null
+      workspace_resource_id          = azurerm_log_analytics_workspace.this_workspace.id
+    }
+  }
+
+  /*
+  lock = {
+    kind = "CanNotDelete"
+    name = "Delete"
+  }
+  */
+
+  managed_identities = {
+    system_assigned = true
+  }
+
+  tags = local.tags
 }
