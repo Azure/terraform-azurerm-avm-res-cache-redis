@@ -651,7 +651,7 @@ Description: The resource id of the redis cache resource.
 
 ### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
 
-Description: n/a
+Description: The resource id for the system managed identity principal id.
 
 ## Modules
 

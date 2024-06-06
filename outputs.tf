@@ -16,6 +16,6 @@ output "resource_id" {
 }
 
 output "system_assigned_mi_principal_id" {
-  value = jsondecode(data.azapi_resource.this.output).identity.principalId
   description = "The resource id for the system managed identity principal id."
+  value       = jsondecode(data.azapi_resource.this.output).identity.principalId
 }
