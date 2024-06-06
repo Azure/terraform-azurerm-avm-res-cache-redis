@@ -119,8 +119,8 @@ module "default" {
   }
 
   redis_configuration = {
-    maxmemory_reserved = 10
-    maxmemory_delta    = 2
+    maxmemory_reserved = 1330
+    maxmemory_delta    = 1330
     maxmemory_policy   = "allkeys-lru"
   }
   /*
