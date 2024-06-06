@@ -17,6 +17,8 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.5.0)
 
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 1.13, != 1.13.0)
+
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.105)
 
 - <a name="requirement_random"></a> [random](#requirement\_random) (~> 3.5)
@@ -24,6 +26,8 @@ The following requirements are needed by this module:
 ## Providers
 
 The following providers are used by this module:
+
+- <a name="provider_azapi"></a> [azapi](#provider\_azapi) (~> 1.13, != 1.13.0)
 
 - <a name="provider_azurerm"></a> [azurerm](#provider\_azurerm) (~> 3.105)
 
@@ -45,6 +49,7 @@ The following resources are used by this module:
 - [azurerm_resource_group_template_deployment.telemetry](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group_template_deployment) (resource)
 - [azurerm_role_assignment.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/role_assignment) (resource)
 - [random_id.telem](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id) (resource)
+- [azapi_resource.this](https://registry.terraform.io/providers/Azure/azapi/latest/docs/data-sources/resource) (data source)
 
 <!-- markdownlint-disable MD013 -->
 ## Required Inputs
@@ -79,7 +84,17 @@ Description: A map of objects describing one or more Redis cache access policies
 - `<map key>` - The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
   - `name` - (Required) - The name string of the Redis Cache Access Policy. Changing this forces a new policy to be created.
   - `permissions - (Required) - A string describing the permissions to be assigned to this Redis Cache Access Policy. Changing this forces a new policy to be created.
-`
+
+Example Input:
+
+````hcl
+cache_access_policies = {
+  example_policy = {
+    name = "example policy"
+    permissions = "+@read +@connection +cluster|info"
+  }
+}
+```
 
 Type:
 
@@ -101,6 +116,19 @@ Description: A map of objects defining one or more Redis Cache access policy ass
   - `object_id` - (Required) - The principal ID to be assigned to the Access Policy. Changing this forces a new policy assignment to be created.
   - `object_id_alias` - (Required) - The alias of the principal ID. User-Friendly name for object ID.  Also represents the username for token-based authentication. Changing this forces a new policy assignment to be created.
 
+Example Input:
+
+```hcl
+cache_access_policy_assignments = {
+  example_policy_assignment = {
+    name = "example_assignment"
+    access_policy_name = "Data Contributor"
+    object_id = data.azurerm_client_config.test.object_id
+    object_policy_alias = "ServicePrincipal"
+  }
+}
+```
+
 Type:
 
 ```hcl
@@ -121,6 +149,18 @@ Description: A map of objects defining one or more Redis Cache firewall rules.
   - `name` - (Required) - The name for the firewall rule
   - `start_ip` - (Required) - The starting IP Address for clients that are allowed to access the Redis Cache.
   - `end_ip` - (Required) - The ending IP Address for clients that are allowed to access the Redis Cache.
+
+Example Input:
+
+```hcl
+cache_firewall_rules = {
+  rule_1 = {
+    name = "thisRule"
+    start_ip = "10.0.0.1"
+    end_ip = "10.0.0.5"
+  }
+}
+```
 
 Type:
 
@@ -156,6 +196,20 @@ Description: A map of diagnostic settings to create on the Key Vault. The map ke
 - `event_hub_authorization_rule_resource_id` - (Optional) The resource ID of the event hub authorization rule to send logs and metrics to.
 - `event_hub_name` - (Optional) The name of the event hub. If none is specified, the default event hub will be selected.
 - `marketplace_partner_resource_id` - (Optional) The full ARM resource ID of the Marketplace resource to which you would like to send Diagnostic LogsLogs.
+
+Example Input:
+
+```hcl
+diagnostic_settings = {
+  diag_setting_1 = {
+    name                           = "diagSetting1"
+    log_groups                     = ["allLogs"]
+    metric_categories              = ["AllMetrics"]
+    log_analytics_destination_type = null
+    workspace_resource_id          = azurerm_log_analytics_workspace.this_workspace.id
+  }
+}
+```
 
 Type:
 
@@ -202,6 +256,18 @@ Description: A map of objects defining one or linked Redis Cache instances to us
   - linked\_redis\_cache\_location = (Required) - The location value for the Redis Cache that is being linked. Changing this forces a new Redis to be created.
   - server\_role - (Required) - The role of the linked Redis Cache.  Possible values are `Primary` and `Secondary`. Changing this forces a new Redis to be created.
 
+Example Input:
+
+```hcl
+linked_redis_caches = {
+  linked_cache_1 = {
+    linked_redis_cache_resource_id = azurerm_redis_cache.example_secondary.id
+    linked_redis_cache_location = azurerm_redis_cache.example_secondary.location
+    server_role = "Secondary"
+  }
+}
+```
+
 Type:
 
 ```hcl
@@ -221,6 +287,14 @@ Description: Controls the Resource Lock configuration for this resource. The fol
 - `kind` - (Required) The type of lock. Possible values are `\"CanNotDelete\"` and `\"ReadOnly\"`.
 - `name` - (Optional) The name of the lock. If not specified, a name will be generated based on the `kind` value. Changing this forces the creation of a new resource.
 
+Example Input:
+```hcl
+lock = {
+  kind = "CanNotDelete"
+  name = "Delete"
+}
+```
+
 Type:
 
 ```hcl
@@ -238,6 +312,15 @@ Description: Controls the Managed Identity configuration on this resource. The f
 
 - `system_assigned` - (Optional) Specifies if the System Assigned Managed Identity should be enabled.
 - `user_assigned_resource_ids` - (Optional) Specifies a list of User Assigned Managed Identity resource IDs to be assigned to this resource.
+
+Example Input:
+
+`hcl  
+managed_identities = {  
+  system_assigned = true
+}
+````
+```
 
 Type:
 
@@ -264,6 +347,18 @@ Description: A set of objects describing the following patch schedule attributes
 - `day_of_week` - (Optional) - A string value for the day of week to start the patch schedule.  Valid values are `Monday`, `Tuesday`, `Wednesday`, `Thursday`, `Friday`, `Saturday`, and `Sunday`.
 - `maintenance_window` - (Optional) - A string value following the ISO 8601 timespan system which specifies the length of time the Redis Cache can be updated from the start hour. Defaults to `PT5H`.
 - `start_hour_utc` - (Optional) - The start hour for maintenance in UTC. Possible values range from 0-23.  Defaults to 0.
+
+Example Input:
+
+```hcl
+patch_schedule = [
+  {
+    day_of_week = "Friday"
+    maintenance_window = "PT5H"
+    start_hour_utc = 23
+  }
+]
+```
 
 Type:
 
@@ -296,6 +391,18 @@ Description: A map of private endpoints to create on this resource. The map key 
 - `ip_configurations` - (Optional) A map of IP configurations to create on the private endpoint. If not specified the platform will create one. The map key is deliberately arbitrary to avoid issues where map keys maybe unknown at plan time.
   - `name` - The name of the IP configuration.
   - `private_ip_address` - The private IP address of the IP configuration.
+
+Example Input:
+
+```hcl
+private_endpoints = {
+  endpoint1 = {
+    subnet_resource_id            = azurerm_subnet.endpoint.id
+    private_dns_zone_group_name   = "private-dns-zone-group"
+    private_dns_zone_resource_ids = [azurerm_private_dns_zone.this.id]
+  }
+}
+```
 
 Type:
 
@@ -336,7 +443,7 @@ Default: `{}`
 
 ### <a name="input_private_static_ip_address"></a> [private\_static\_ip\_address](#input\_private\_static\_ip\_address)
 
-Description: (Optional) - The static IP Address to assign to the Redis Cache when hosted inside a virtual network. Configuring this value implies that the `subnet_id` value has been set.
+Description: (Optional) - The static IP Address to assign to the Redis Cache when hosted inside a virtual network. Configuring this value implies that the `subnet_resource_id` value has been set.
 
 Type: `string`
 
@@ -352,44 +459,52 @@ Default: `true`
 
 ### <a name="input_redis_configuration"></a> [redis\_configuration](#input\_redis\_configuration)
 
-Description: Describes redis configuration block.  
-      aof\_backup\_enabled                      = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.  
-      aof\_storage\_connection\_string\_0         = (Optional) First Storage Account connection string for AOF persistence.  
-      aof\_storage\_connection\_string\_1         = (Optional) Second Storage Account connection string for AOF persistence.  
-      enable\_authentication                   = (Optional) If set to false, the Redis instance will be accessible without authentication. Defaults to true.  
-      active\_directory\_authentication\_enabled = (Optional) Enable Microsoft Entra (AAD) authentication. Defaults to false.  
-      maxmemory\_reserved                      = (Optional) Value in megabytes reserved for non-cache usage e.g. failover. Defaults are shown below.  
-      maxmemory\_delta                         = (Optional) The max-memory delta for this Redis instance. Defaults are shown below.  
-      maxmemory\_policy                        = (Optional) How Redis will select what to remove when maxmemory is reached. Defaults to volatile-lru.  
-      data\_persistence\_authentication\_method  = (Optional) Preferred auth method to communicate to storage account used for data persistence. Possible values are SAS and ManagedIdentity. Defaults to SAS.  
-      maxfragmentationmemory\_reserved         = (Optional) Value in megabytes reserved to accommodate for memory fragmentation. Defaults are shown below.  
-      rdb\_backup\_enabled                      = (Optional) Is Backup Enabled? Only supported on Premium SKUs. Defaults to false. Note - If rdb\_backup\_enabled set to true, rdb\_storage\_connection\_string must also be set.  
-      rdb\_backup\_frequency                    = (Optional) The Backup Frequency in Minutes. Only supported on Premium SKUs. Possible values are: 15, 30, 60, 360, 720 and 1440.  
-      rdb\_backup\_max\_snapshot\_count           = (Optional) The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.  
-      rdb\_storage\_connection\_string           = (Optional) The Connection String to the Storage Account. Only supported for Premium SKUs. In the format: DefaultEndpointsProtocol=https;BlobEndpoint=\$\{azurerm\_storage\_account.example.primary\_blob\_endpoint\};AccountName=\$\{azurerm\_storage\_account.example.name\};AccountKey=\$\{azurerm\_storage\_account.example.primary\_access\_key\}.  
-      storage\_account\_subscription\_id         = (Optional) The ID of the Subscription containing the Storage Account.  
-      notify\_keyspace\_events                  = (Optional) Keyspace notifications allows clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way. Reference
+Description: Describes redis configuration block.
+- `aof_backup_enabled`                       = (Optional) Enable or disable AOF persistence for this Redis Cache. Defaults to false. Note: `aof_backup_enabled` can only be set when SKU is Premium.
+- `aof_storage_connection_string_0`          = (Optional) First Storage Account connection string for AOF persistence.
+- `aof_storage_connection_string_1`          = (Optional) Second Storage Account connection string for AOF persistence.
+- `enable_authentication`                    = (Optional) If set to false, the Redis instance will be accessible without authentication. Defaults to true.
+- `active_directory_authentication_enabled`  = (Optional) Enable Microsoft Entra (AAD) authentication. Defaults to false.
+- `maxmemory_reserved`                       = (Optional) Value in megabytes reserved for non-cache usage e.g. failover. Defaults are shown below.
+- `maxmemory_delta`                          = (Optional) The max-memory delta for this Redis instance. Defaults are shown below.
+- `maxmemory_policy`                         = (Optional) How Redis will select what to remove when maxmemory is reached. Defaults to volatile-lru.
+- `data_persistence_authentication_method`   = (Optional) Preferred auth method to communicate to storage account used for data persistence. Possible values are SAS and ManagedIdentity. Defaults to SAS.
+- `maxfragmentationmemory_reserved`          = (Optional) Value in megabytes reserved to accommodate for memory fragmentation. Defaults are shown below.
+- `rdb_backup_enabled`                       = (Optional) Is Backup Enabled? Only supported on Premium SKUs. Defaults to false. Note - If rdb\_backup\_enabled set to true, rdb\_storage\_connection\_string must also be set.
+- `rdb_backup_frequency`                     = (Optional) The Backup Frequency in Minutes. Only supported on Premium SKUs. Possible values are: 15, 30, 60, 360, 720 and 1440.
+- `rdb_backup_max_snapshot_count`            = (Optional) The maximum number of snapshots to create as a backup. Only supported for Premium SKUs.
+- `rdb_storage_connection_string`            = (Optional) The Connection String to the Storage Account. Only supported for Premium SKUs. In the format: DefaultEndpointsProtocol=https;BlobEndpoint=\$\{azurerm\_storage\_account.example.primary\_blob\_endpoint\};AccountName=\$\{azurerm\_storage\_account.example.name\};AccountKey=\$\{azurerm\_storage\_account.example.primary\_access\_key\}.
+- `storage_account_subscription_resource_id` = (Optional) The ID of the Subscription containing the Storage Account.
+- `notify_keyspace_events`                   = (Optional) Keyspace notifications allows clients to subscribe to Pub/Sub channels in order to receive events affecting the Redis data set in some way.
+
+Example Input:
+
+redis\_configuration = {  
+  maxmemory\_reserved = 10  
+  maxmemory\_delta    = 2  
+  maxmemory\_policy   = "allkeys-lru"
+}
 
 Type:
 
 ```hcl
 object({
-    aof_backup_enabled                      = optional(bool)
-    aof_storage_connection_string_0         = optional(string)
-    aof_storage_connection_string_1         = optional(string)
-    enable_authentication                   = optional(bool)
-    active_directory_authentication_enabled = optional(bool)
-    maxmemory_reserved                      = optional(number)
-    maxmemory_delta                         = optional(number)
-    maxfragmentationmemory_reserved         = optional(number)
-    maxmemory_policy                        = optional(string)
-    data_persistence_authentication_method  = optional(string) #TODO: research the managed identity vs. SAS key and determine level of effort required to default to ManagedIdentity as the more secure option, and review what happens if data persistence is not enabled.
-    rdb_backup_enabled                      = optional(bool)   #TODO: Research if we want backups to be true. Given this is cache, probably not required.
-    rdb_backup_frequency                    = optional(number)
-    rdb_backup_max_snapshot_count           = optional(number)
-    rdb_storage_connection_string           = optional(string)
-    storage_account_subscription_id         = optional(string)
-    notify_keyspace_events                  = optional(string)
+    aof_backup_enabled                       = optional(bool)
+    aof_storage_connection_string_0          = optional(string)
+    aof_storage_connection_string_1          = optional(string)
+    enable_authentication                    = optional(bool)
+    active_directory_authentication_enabled  = optional(bool)
+    maxmemory_reserved                       = optional(number)
+    maxmemory_delta                          = optional(number)
+    maxfragmentationmemory_reserved          = optional(number)
+    maxmemory_policy                         = optional(string)
+    data_persistence_authentication_method   = optional(string) #TODO: research the managed identity vs. SAS key and determine level of effort required to default to ManagedIdentity as the more secure option, and review what happens if data persistence is not enabled.
+    rdb_backup_enabled                       = optional(bool)   #TODO: Research if we want backups to be true. Given this is cache, probably not required.
+    rdb_backup_frequency                     = optional(number)
+    rdb_backup_max_snapshot_count            = optional(number)
+    rdb_storage_connection_string            = optional(string)
+    storage_account_subscription_resource_id = optional(string)
+    notify_keyspace_events                   = optional(string)
   })
 ```
 
@@ -434,6 +549,17 @@ Description: A map of role assignments to create on the <RESOURCE>. The map key 
 
 > Note: only set `skip_service_principal_aad_check` to true if you are assigning a role to a service principal.
 
+Example Input:
+
+```hcl
+role_assignments = {
+  deployment_user_contributor = {
+    role_definition_id_or_name = "Contributor"
+    principal_id               = data.azurerm_client_config.current.client_id
+  }
+}
+```
+
 Type:
 
 ```hcl
@@ -467,7 +593,7 @@ Type: `string`
 
 Default: `"Premium"`
 
-### <a name="input_subnet_id"></a> [subnet\_id](#input\_subnet\_id)
+### <a name="input_subnet_resource_id"></a> [subnet\_resource\_id](#input\_subnet\_resource\_id)
 
 Description: (Optional) - Only available when using the `Premium` SKU. The ID of the Subnet within which the Redis Cache should be deployed. This Subnet must only contain Azure Cache for Redis instances without any other type of resources.  Changing this forces a new resource to be created.
 
@@ -483,7 +609,7 @@ Type: `map(string)`
 
 Default: `null`
 
-### <a name="input_tenent_settings"></a> [tenent\_settings](#input\_tenent\_settings)
+### <a name="input_tenant_settings"></a> [tenant\_settings](#input\_tenant\_settings)
 
 Description: (Optional) A mapping of tenant settings to assign to the resource.
 
@@ -522,6 +648,10 @@ Description: This is the full output for the resource.
 ### <a name="output_resource_id"></a> [resource\_id](#output\_resource\_id)
 
 Description: The resource id of the redis cache resource.
+
+### <a name="output_system_assigned_mi_principal_id"></a> [system\_assigned\_mi\_principal\_id](#output\_system\_assigned\_mi\_principal\_id)
+
+Description: n/a
 
 ## Modules
 

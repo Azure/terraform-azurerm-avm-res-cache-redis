@@ -16,9 +16,9 @@ resource "azurerm_redis_cache" "this" {
   replicas_per_master           = var.replicas_per_master
   replicas_per_primary          = var.replicas_per_primary
   shard_count                   = var.shard_count
-  subnet_id                     = var.subnet_id
+  subnet_id                     = var.subnet_resource_id
   tags                          = var.tags
-  tenant_settings               = var.tenent_settings
+  tenant_settings               = var.tenant_settings
   zones                         = var.zones
 
   dynamic "identity" {
@@ -52,7 +52,7 @@ resource "azurerm_redis_cache" "this" {
     rdb_backup_frequency                    = var.redis_configuration.rdb_backup_frequency
     rdb_backup_max_snapshot_count           = var.redis_configuration.rdb_backup_max_snapshot_count
     rdb_storage_connection_string           = var.redis_configuration.rdb_storage_connection_string
-    storage_account_subscription_id         = var.redis_configuration.storage_account_subscription_id
+    storage_account_subscription_id         = var.redis_configuration.storage_account_subscription_resource_id
   }
 }
 
@@ -74,4 +74,10 @@ resource "azurerm_management_lock" "this" {
     azurerm_redis_linked_server.this,
     azurerm_role_assignment.this
   ]
+}
+
+data "azapi_resource" "this" {
+  type                   = "Microsoft.Cache/Redis@2023-08-01"
+  resource_id            = azurerm_redis_cache.this.id
+  response_export_values = ["*"]
 }

@@ -14,3 +14,7 @@ output "resource_id" {
   description = "The resource id of the redis cache resource."
   value       = azurerm_redis_cache.this.id
 }
+
+output "system_assigned_mi_principal_id" {
+  value = jsondecode(data.azapi_resource.this.output).identity.principalId
+}
