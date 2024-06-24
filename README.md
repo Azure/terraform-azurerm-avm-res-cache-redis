@@ -83,11 +83,11 @@ The following input variables are optional (have default values):
 Description: A map of objects describing one or more Redis cache access policies.
 - `<map key>` - The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
   - `name` - (Required) - The name string of the Redis Cache Access Policy. Changing this forces a new policy to be created.
-  - `permissions - (Required) - A string describing the permissions to be assigned to this Redis Cache Access Policy. Changing this forces a new policy to be created.
+  - `permissions` - (Required) - A string describing the permissions to be assigned to this Redis Cache Access Policy. Changing this forces a new policy to be created.
 
 Example Input:
 
-````hcl
+```hcl
 cache_access_policies = {
   example_policy = {
     name = "example policy"
