@@ -15,7 +15,7 @@ This module implements the AVM version of the Azure Cache for Redis and supporti
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (>= 1.5.0)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.7)
 
 - <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 1.13, != 1.13.0)
 
@@ -636,6 +636,10 @@ Default:
 ## Outputs
 
 The following outputs are exported:
+
+### <a name="output_name"></a> [name](#output\_name)
+
+Description: The name of the redis resource
 
 ### <a name="output_private_endpoints"></a> [private\_endpoints](#output\_private\_endpoints)
 
