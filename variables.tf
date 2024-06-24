@@ -421,11 +421,13 @@ Describes redis configuration block.
 
 Example Input:
 
+```hcl
 redis_configuration = {
   maxmemory_reserved = 10
   maxmemory_delta    = 2
   maxmemory_policy   = "allkeys-lru"
 }
+```
 DESCRIPTION
 }
 

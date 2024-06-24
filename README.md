@@ -478,11 +478,13 @@ Description: Describes redis configuration block.
 
 Example Input:
 
-redis\_configuration = {  
-  maxmemory\_reserved = 10  
-  maxmemory\_delta    = 2  
-  maxmemory\_policy   = "allkeys-lru"
+```hcl
+redis_configuration = {
+  maxmemory_reserved = 10
+  maxmemory_delta    = 2
+  maxmemory_policy   = "allkeys-lru"
 }
+```
 
 Type:
 

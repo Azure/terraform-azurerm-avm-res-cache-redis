@@ -93,7 +93,7 @@ resource "azurerm_log_analytics_workspace" "this_workspace" {
 module "default" {
   source = "../../"
   # source             = "Azure/avm-res-cache-redis/azurerm"
-  # version            = "0.1.3"
+  # version            = "0.1.4"
 
   enable_telemetry              = var.enable_telemetry
   name                          = module.naming.redis_cache.name_unique
