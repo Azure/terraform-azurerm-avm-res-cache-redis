@@ -197,9 +197,9 @@ variable "linked_redis_caches" {
   description = <<DESCRIPTION
 A map of objects defining one or linked Redis Cache instances to use as secondaries.
 - `<map key>` - The map key is deliberately arbitrary to avoid issues where map keys may be unknown at plan time.
-  - linked_redis_cache_resource_id = (Required) - The Azure resource ID of the Redis Cache that is being linked. Changing this forces a new Redis to be created.
-  - linked_redis_cache_location = (Required) - The location value for the Redis Cache that is being linked. Changing this forces a new Redis to be created.
-  - server_role - (Required) - The role of the linked Redis Cache.  Possible values are `Primary` and `Secondary`. Changing this forces a new Redis to be created.
+  - `linked_redis_cache_resource_id` = (Required) - The Azure resource ID of the Redis Cache that is being linked. Changing this forces a new Redis to be created.
+  - `linked_redis_cache_location` = (Required) - The location value for the Redis Cache that is being linked. Changing this forces a new Redis to be created.
+  - `server_role` - (Required) - The role of the linked Redis Cache.  Possible values are `Primary` and `Secondary`. Changing this forces a new Redis to be created.
 
 Example Input:
 
@@ -258,7 +258,7 @@ Controls the Managed Identity configuration on this resource. The following prop
 
 Example Input:
 
-``hcl
+```hcl
 managed_identities = {
   system_assigned = true
 }
