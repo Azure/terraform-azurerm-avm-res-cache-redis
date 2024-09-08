@@ -23,6 +23,7 @@ resource "azurerm_redis_cache" "this" {
 
   dynamic "identity" {
     for_each = local.managed_identities.system_assigned_user_assigned
+
     content {
       type         = identity.value.type
       identity_ids = identity.value.user_assigned_resource_ids
@@ -30,6 +31,7 @@ resource "azurerm_redis_cache" "this" {
   }
   dynamic "patch_schedule" {
     for_each = tolist(var.patch_schedule)
+
     content {
       day_of_week        = patch_schedule.value.day_of_week
       maintenance_window = patch_schedule.value.maintenance_window
