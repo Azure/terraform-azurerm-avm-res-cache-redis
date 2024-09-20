@@ -522,6 +522,6 @@ variable "tenant_settings" {
 
 variable "zones" {
   type        = list(string)
-  default     = ["1", "2", "3"]
+  default     = null
   description = "(Optional) - Specifies a list of Availability Zones in which this Redis Cache should be located.  Changing this forces a new Redis Cache to be created."
 }
