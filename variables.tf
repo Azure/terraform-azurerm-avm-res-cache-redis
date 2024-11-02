@@ -300,6 +300,13 @@ patch_schedule = [
 DESCRIPTION
 }
 
+variable "private_endpoints_manage_dns_zone_group" {
+  type        = bool
+  default     = true
+  nullable    = false
+  description = "Default to true. Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
+}
+
 variable "private_endpoints" {
   type = map(object({
     name = optional(string, null)
