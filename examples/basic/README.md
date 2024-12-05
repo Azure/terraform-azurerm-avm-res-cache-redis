@@ -1,7 +1,7 @@
 <!-- BEGIN_TF_DOCS -->
 # Default example
 
-This deploys the Azure Cache for Redis module in its simplest form.
+This deploys the Azure Cache for Redis module with a basic sku to demonstrate how to work around the zone field requiring an input.
 
 ```hcl
 terraform {
@@ -58,87 +58,19 @@ resource "azurerm_resource_group" "this" {
   name     = module.naming.resource_group.name_unique
 }
 
-# create a virtual network
-resource "azurerm_virtual_network" "this" {
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.this.location
-  name                = "endppoint-vnet"
-  resource_group_name = azurerm_resource_group.this.name
-}
-
-# create a subnet for the private endpoint
-resource "azurerm_subnet" "endpoint" {
-  address_prefixes     = ["10.0.2.0/24"]
-  name                 = "endpoint"
-  resource_group_name  = azurerm_resource_group.this.name
-  virtual_network_name = azurerm_virtual_network.this.name
-}
-
-resource "azurerm_private_dns_zone" "this" {
-  name                = "privatelink.redis.cache.windows.net"
-  resource_group_name = azurerm_resource_group.this.name
-}
-
-resource "azurerm_private_dns_zone_virtual_network_link" "this" {
-  name                  = "vnet-link"
-  private_dns_zone_name = azurerm_private_dns_zone.this.name
-  resource_group_name   = azurerm_resource_group.this.name
-  virtual_network_id    = azurerm_virtual_network.this.id
-}
-
-resource "azurerm_log_analytics_workspace" "this_workspace" {
-  location            = azurerm_resource_group.this.location
-  name                = module.naming.log_analytics_workspace.name_unique
-  resource_group_name = azurerm_resource_group.this.name
-  retention_in_days   = 30
-  sku                 = "PerGB2018"
-  tags                = local.tags
-}
 
 # This is the module call
-module "default" {
+module "basic" {
   source = "../../"
   # source             = "Azure/avm-res-cache-redis/azurerm"
   # version            = "0.2.0"
 
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.redis_cache.name_unique
-  resource_group_name           = azurerm_resource_group.this.name
-  location                      = azurerm_resource_group.this.location
-  public_network_access_enabled = false
-  private_endpoints = {
-    endpoint1 = {
-      subnet_resource_id            = azurerm_subnet.endpoint.id
-      private_dns_zone_group_name   = "private-dns-zone-group"
-      private_dns_zone_resource_ids = [azurerm_private_dns_zone.this.id]
-    }
-  }
-
-  diagnostic_settings = {
-    diag_setting_1 = {
-      name                           = "diagSetting1"
-      log_groups                     = ["allLogs"]
-      metric_categories              = ["AllMetrics"]
-      log_analytics_destination_type = null
-      workspace_resource_id          = azurerm_log_analytics_workspace.this_workspace.id
-    }
-  }
-
-  redis_configuration = {
-    maxmemory_reserved = 1330
-    maxmemory_delta    = 1330
-    maxmemory_policy   = "allkeys-lru"
-  }
-  /*
-  lock = {
-    kind = "CanNotDelete"
-    name = "Delete"
-  }
-  */
-
-  managed_identities = {
-    system_assigned = true
-  }
+  enable_telemetry    = var.enable_telemetry
+  name                = module.naming.redis_cache.name_unique
+  resource_group_name = azurerm_resource_group.this.name
+  location            = azurerm_resource_group.this.location
+  sku_name            = "Basic"
+  zones               = null
 
   tags = local.tags
 }
@@ -159,12 +91,7 @@ The following requirements are needed by this module:
 
 The following resources are used by this module:
 
-- [azurerm_log_analytics_workspace.this_workspace](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/log_analytics_workspace) (resource)
-- [azurerm_private_dns_zone.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone) (resource)
-- [azurerm_private_dns_zone_virtual_network_link.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/private_dns_zone_virtual_network_link) (resource)
 - [azurerm_resource_group.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group) (resource)
-- [azurerm_subnet.endpoint](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/subnet) (resource)
-- [azurerm_virtual_network.this](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/virtual_network) (resource)
 - [random_integer.region_index](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/integer) (resource)
 
 <!-- markdownlint-disable MD013 -->
@@ -194,7 +121,7 @@ No outputs.
 
 The following Modules are called:
 
-### <a name="module_default"></a> [default](#module\_default)
+### <a name="module_basic"></a> [basic](#module\_basic)
 
 Source: ../../
 

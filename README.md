@@ -17,9 +17,9 @@ The following requirements are needed by this module:
 
 - <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.7)
 
-- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 1.13, != 1.13.0)
+- <a name="requirement_azapi"></a> [azapi](#requirement\_azapi) (~> 2.0)
 
-- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 3.105)
+- <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
 - <a name="requirement_modtm"></a> [modtm](#requirement\_modtm) (~> 0.3)
 
@@ -72,6 +72,14 @@ Type: `string`
 ## Optional Inputs
 
 The following input variables are optional (have default values):
+
+### <a name="input_access_keys_authentication_enabled"></a> [access\_keys\_authentication\_enabled](#input\_access\_keys\_authentication\_enabled)
+
+Description: (Optional) - Whether access key authentication is enabled? Defaults to `true`. `active_directory_authentication_enabled` must be set to `true` to disable access key authentication.
+
+Type: `bool`
+
+Default: `null`
 
 ### <a name="input_cache_access_policies"></a> [cache\_access\_policies](#input\_cache\_access\_policies)
 
@@ -591,7 +599,7 @@ Default: `null`
 
 ### <a name="input_sku_name"></a> [sku\_name](#input\_sku\_name)
 
-Description: (Required) - The Redis SKU to use.  Possible values are `Basic`, `Standard`, `Premium`, and `Enterprise`. Note: Downgrading the sku will force new resource creation.
+Description: (Required) - The Redis SKU to use.  Possible values are `Basic`, `Standard`, and `Premium`. Note: Downgrading the sku will force new resource creation.
 
 Type: `string`
 

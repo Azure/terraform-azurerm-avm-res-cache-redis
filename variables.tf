@@ -20,6 +20,13 @@ variable "resource_group_name" {
   description = "The resource group where the resources will be deployed."
 }
 
+########### optional variables
+variable "access_keys_authentication_enabled" {
+  type        = bool
+  default     = null
+  description = "(Optional) - Whether access key authentication is enabled? Defaults to `true`. `active_directory_authentication_enabled` must be set to `true` to disable access key authentication."
+}
+
 variable "cache_access_policies" {
   type = map(object({
     name        = string
@@ -300,13 +307,6 @@ patch_schedule = [
 DESCRIPTION
 }
 
-variable "private_endpoints_manage_dns_zone_group" {
-  type        = bool
-  default     = true
-  nullable    = false
-  description = "Default to true. Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
-}
-
 variable "private_endpoints" {
   type = map(object({
     name = optional(string, null)
@@ -370,6 +370,13 @@ private_endpoints = {
 }
 ```
 DESCRIPTION
+  nullable    = false
+}
+
+variable "private_endpoints_manage_dns_zone_group" {
+  type        = bool
+  default     = true
+  description = "Default to true. Whether to manage private DNS zone groups with this module. If set to false, you must manage private DNS zone groups externally, e.g. using Azure Policy."
   nullable    = false
 }
 
@@ -505,7 +512,7 @@ variable "shard_count" {
 variable "sku_name" {
   type        = string
   default     = "Premium"
-  description = "(Required) - The Redis SKU to use.  Possible values are `Basic`, `Standard`, `Premium`, and `Enterprise`. Note: Downgrading the sku will force new resource creation." #TODO validate whether we can merge Open Source and Premium skus
+  description = "(Required) - The Redis SKU to use.  Possible values are `Basic`, `Standard`, and `Premium`. Note: Downgrading the sku will force new resource creation." #TODO validate whether we can merge Open Source and Premium skus
 }
 
 variable "subnet_resource_id" {

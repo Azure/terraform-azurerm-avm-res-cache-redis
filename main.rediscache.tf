@@ -2,24 +2,25 @@
 # NOTE: the Name used for Redis needs to be globally unique
 
 resource "azurerm_redis_cache" "this" {
-  capacity                      = var.capacity
-  family                        = local.redis_cache_family # family is inferred from the SKU name
-  location                      = var.location
-  name                          = var.name
-  resource_group_name           = var.resource_group_name
-  sku_name                      = var.sku_name
-  enable_non_ssl_port           = var.enable_non_ssl_port
-  minimum_tls_version           = var.minimum_tls_version
-  private_static_ip_address     = var.private_static_ip_address
-  public_network_access_enabled = var.public_network_access_enabled
-  redis_version                 = var.redis_version
-  replicas_per_master           = var.replicas_per_master
-  replicas_per_primary          = var.replicas_per_primary
-  shard_count                   = var.shard_count
-  subnet_id                     = var.subnet_resource_id
-  tags                          = var.tags
-  tenant_settings               = var.tenant_settings
-  zones                         = var.zones
+  capacity                           = var.capacity
+  family                             = local.redis_cache_family # family is inferred from the SKU name
+  location                           = var.location
+  name                               = var.name
+  resource_group_name                = var.resource_group_name
+  sku_name                           = var.sku_name
+  access_keys_authentication_enabled = var.access_keys_authentication_enabled
+  minimum_tls_version                = var.minimum_tls_version
+  non_ssl_port_enabled               = var.enable_non_ssl_port
+  private_static_ip_address          = var.private_static_ip_address
+  public_network_access_enabled      = var.public_network_access_enabled
+  redis_version                      = var.redis_version
+  replicas_per_master                = var.replicas_per_master
+  replicas_per_primary               = var.replicas_per_primary
+  shard_count                        = var.shard_count
+  subnet_id                          = var.subnet_resource_id
+  tags                               = var.tags
+  tenant_settings                    = var.tenant_settings
+  zones                              = var.zones
 
   dynamic "identity" {
     for_each = local.managed_identities.system_assigned_user_assigned
@@ -43,8 +44,8 @@ resource "azurerm_redis_cache" "this" {
     aof_backup_enabled                      = var.redis_configuration.aof_backup_enabled
     aof_storage_connection_string_0         = var.redis_configuration.aof_storage_connection_string_0
     aof_storage_connection_string_1         = var.redis_configuration.aof_storage_connection_string_1
+    authentication_enabled                  = var.redis_configuration.enable_authentication
     data_persistence_authentication_method  = var.redis_configuration.data_persistence_authentication_method
-    enable_authentication                   = var.redis_configuration.enable_authentication
     maxfragmentationmemory_reserved         = var.redis_configuration.maxfragmentationmemory_reserved
     maxmemory_delta                         = var.redis_configuration.maxmemory_delta
     maxmemory_policy                        = var.redis_configuration.maxmemory_policy

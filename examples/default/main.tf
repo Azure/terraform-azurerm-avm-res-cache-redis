@@ -3,7 +3,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 3.105"
+      version = "~> 4.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -93,7 +93,7 @@ resource "azurerm_log_analytics_workspace" "this_workspace" {
 module "default" {
   source = "../../"
   # source             = "Azure/avm-res-cache-redis/azurerm"
-  # version            = "0.1.4"
+  # version            = "0.2.0"
 
   enable_telemetry              = var.enable_telemetry
   name                          = module.naming.redis_cache.name_unique
