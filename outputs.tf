@@ -13,6 +13,7 @@ output "private_endpoints" {
 output "resource" {
   description = "This is the full output for the resource."
   value       = azurerm_redis_cache.this
+  sensitive   = true
 }
 
 output "resource_id" {
