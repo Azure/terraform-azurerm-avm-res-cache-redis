@@ -56,7 +56,7 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
     content {
       name               = ip_configuration.value.name
       private_ip_address = ip_configuration.value.private_ip_address
-      member_name        = "Azure redis cache"
+      member_name        = "redisCache"
       subresource_name   = "redisCache"
     }
   }

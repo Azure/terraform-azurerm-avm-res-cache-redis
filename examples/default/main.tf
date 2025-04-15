@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.7"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -30,7 +30,7 @@ locals {
 # This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/regions/azurerm"
-  version = "~> 0.6"
+  version = "0.8.2"
 }
 
 # This allows us to randomize the region for the resource group.
@@ -43,7 +43,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.4"
+  version = "0.4.2"
 }
 
 # This is required for resource modules
@@ -93,7 +93,7 @@ resource "azurerm_log_analytics_workspace" "this_workspace" {
 module "default" {
   source = "../../"
   # source             = "Azure/avm-res-cache-redis/azurerm"
-  # version            = "0.2.0"
+  # version            = "0.4.0"
 
   enable_telemetry              = var.enable_telemetry
   name                          = module.naming.redis_cache.name_unique

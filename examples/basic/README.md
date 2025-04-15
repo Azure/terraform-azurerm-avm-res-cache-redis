@@ -1,11 +1,11 @@
 <!-- BEGIN_TF_DOCS -->
-# Default example
+# Basic Sku example
 
 This deploys the Azure Cache for Redis module with a basic sku to demonstrate how to work around the zone field requiring an input.
 
 ```hcl
 terraform {
-  required_version = "~> 1.7"
+  required_version = "~> 1.9"
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -36,7 +36,7 @@ locals {
 # This allows us to randomize the region for the resource group.
 module "regions" {
   source  = "Azure/regions/azurerm"
-  version = "~> 0.6"
+  version = "0.8.2"
 }
 
 # This allows us to randomize the region for the resource group.
@@ -49,7 +49,7 @@ resource "random_integer" "region_index" {
 # This ensures we have unique CAF compliant names for our resources.
 module "naming" {
   source  = "Azure/naming/azurerm"
-  version = "~> 0.4"
+  version = "0.4.2"
 }
 
 # This is required for resource modules
@@ -63,7 +63,7 @@ resource "azurerm_resource_group" "this" {
 module "basic" {
   source = "../../"
   # source             = "Azure/avm-res-cache-redis/azurerm"
-  # version            = "0.2.0"
+  # version            = "0.4.0"
 
   enable_telemetry    = var.enable_telemetry
   name                = module.naming.redis_cache.name_unique
@@ -81,7 +81,7 @@ module "basic" {
 
 The following requirements are needed by this module:
 
-- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.7)
+- <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) (~> 1.9)
 
 - <a name="requirement_azurerm"></a> [azurerm](#requirement\_azurerm) (~> 4.0)
 
@@ -131,13 +131,13 @@ Version:
 
 Source: Azure/naming/azurerm
 
-Version: ~> 0.4
+Version: 0.4.2
 
 ### <a name="module_regions"></a> [regions](#module\_regions)
 
 Source: Azure/regions/azurerm
 
-Version: ~> 0.6
+Version: 0.8.2
 
 <!-- markdownlint-disable-next-line MD041 -->
 ## Data Collection
