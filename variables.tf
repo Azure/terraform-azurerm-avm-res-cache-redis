@@ -78,7 +78,7 @@ cache_access_policy_assignments = {
     name = "example_assignment"
     access_policy_name = "Data Contributor"
     object_id = data.azurerm_client_config.test.object_id
-    object_policy_alias = "ServicePrincipal"
+    object_id_alias = "ServicePrincipal"
   }
 }
 ```
