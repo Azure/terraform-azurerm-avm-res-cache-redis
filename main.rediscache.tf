@@ -80,7 +80,7 @@ resource "azurerm_management_lock" "this" {
 }
 
 data "azapi_resource" "this" {
-  type                   = "Microsoft.Cache/Redis@2023-08-01"
   resource_id            = azurerm_redis_cache.this.id
+  type                   = "Microsoft.Cache/Redis@2023-08-01"
   response_export_values = ["*"]
 }
