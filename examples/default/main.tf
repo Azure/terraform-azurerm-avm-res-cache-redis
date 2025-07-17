@@ -1,5 +1,6 @@
 terraform {
   required_version = "~> 1.9"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -54,10 +55,10 @@ resource "azurerm_resource_group" "this" {
 
 # create a virtual network
 resource "azurerm_virtual_network" "this" {
-  address_space       = ["10.0.0.0/16"]
   location            = azurerm_resource_group.this.location
   name                = "endppoint-vnet"
   resource_group_name = azurerm_resource_group.this.name
+  address_space       = ["10.0.0.0/16"]
 }
 
 # create a subnet for the private endpoint
@@ -92,22 +93,10 @@ resource "azurerm_log_analytics_workspace" "this_workspace" {
 # This is the module call
 module "default" {
   source = "../../"
-  # source             = "Azure/avm-res-cache-redis/azurerm"
-  # version            = "0.4.0"
 
-  enable_telemetry              = var.enable_telemetry
-  name                          = module.naming.redis_cache.name_unique
-  resource_group_name           = azurerm_resource_group.this.name
-  location                      = azurerm_resource_group.this.location
-  public_network_access_enabled = false
-  private_endpoints = {
-    endpoint1 = {
-      subnet_resource_id            = azurerm_subnet.endpoint.id
-      private_dns_zone_group_name   = "private-dns-zone-group"
-      private_dns_zone_resource_ids = [azurerm_private_dns_zone.this.id]
-    }
-  }
-
+  location            = azurerm_resource_group.this.location
+  name                = module.naming.redis_cache.name_unique
+  resource_group_name = azurerm_resource_group.this.name
   diagnostic_settings = {
     diag_setting_1 = {
       name                           = "diagSetting1"
@@ -117,22 +106,22 @@ module "default" {
       workspace_resource_id          = azurerm_log_analytics_workspace.this_workspace.id
     }
   }
-
+  enable_telemetry = var.enable_telemetry
+  managed_identities = {
+    system_assigned = true
+  }
+  private_endpoints = {
+    endpoint1 = {
+      subnet_resource_id            = azurerm_subnet.endpoint.id
+      private_dns_zone_group_name   = "private-dns-zone-group"
+      private_dns_zone_resource_ids = [azurerm_private_dns_zone.this.id]
+    }
+  }
+  public_network_access_enabled = false
   redis_configuration = {
     maxmemory_reserved = 1330
     maxmemory_delta    = 1330
     maxmemory_policy   = "allkeys-lru"
   }
-  /*
-  lock = {
-    kind = "CanNotDelete"
-    name = "Delete"
-  }
-  */
-
-  managed_identities = {
-    system_assigned = true
-  }
-
   tags = local.tags
 }

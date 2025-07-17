@@ -1,5 +1,6 @@
 terraform {
   required_version = "~> 1.9"
+
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
@@ -56,15 +57,12 @@ resource "azurerm_resource_group" "this" {
 # This is the module call
 module "basic" {
   source = "../../"
-  # source             = "Azure/avm-res-cache-redis/azurerm"
-  # version            = "0.4.0"
 
-  enable_telemetry    = var.enable_telemetry
+  location            = azurerm_resource_group.this.location
   name                = module.naming.redis_cache.name_unique
   resource_group_name = azurerm_resource_group.this.name
-  location            = azurerm_resource_group.this.location
+  enable_telemetry    = var.enable_telemetry
   sku_name            = "Basic"
+  tags                = local.tags
   zones               = null
-
-  tags = local.tags
 }
