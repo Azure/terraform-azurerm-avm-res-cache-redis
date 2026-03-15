@@ -15,4 +15,9 @@ resource "azurerm_redis_cache_access_policy_assignment" "this" {
   object_id          = each.value.object_id
   object_id_alias    = each.value.object_id_alias
   redis_cache_id     = azurerm_redis_cache.this.id
+
+  timeouts {
+    create = "30m"
+    delete = "30m"
+  }
 }
