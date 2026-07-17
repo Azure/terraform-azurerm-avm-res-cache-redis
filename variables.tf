@@ -78,12 +78,22 @@ cache_access_policy_assignments = {
     name = "example_assignment"
     access_policy_name = "Data Contributor"
     object_id = data.azurerm_client_config.test.object_id
-    object_policy_alias = "ServicePrincipal"
+    object_id_alias = "ServicePrincipal"
   }
 }
 ```
 DESCRIPTION
   nullable    = false
+
+  validation {
+    condition     = alltrue([for assignment in var.cache_access_policy_assignments : contains(["ServicePrincipal", "User", "Group", "ManagedIdentity"], assignment.object_id_alias)])
+    error_message = "The object_id_alias must be one of 'ServicePrincipal', 'User', 'Group', or 'ManagedIdentity'."
+  }
+
+  validation {
+    condition     = alltrue([for assignment in var.cache_access_policy_assignments : contains(["Data Owner", "Data Contributor", "Data Reader"], assignment.access_policy_name)])
+    error_message = "The access_policy_name must be one of 'Data Owner, Data Contributor, or Data Reader."
+  }
 }
 
 #TODO - Can we review this with the PG to determine if they intend to improve the target representation? (single value CIDR syntax as an option?)
