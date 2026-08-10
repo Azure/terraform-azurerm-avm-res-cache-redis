@@ -14,6 +14,7 @@ resource "azurerm_private_endpoint" "this_managed_dns_zone_groups" {
     private_connection_resource_id = azurerm_redis_cache.this.id
     subresource_names              = ["redisCache"]
   }
+
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
 
@@ -24,6 +25,7 @@ resource "azurerm_private_endpoint" "this_managed_dns_zone_groups" {
       subresource_name   = "redisCache"
     }
   }
+
   dynamic "private_dns_zone_group" {
     for_each = length(each.value.private_dns_zone_resource_ids) > 0 ? ["this"] : []
 
@@ -50,6 +52,7 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
     private_connection_resource_id = azurerm_redis_cache.this.id
     subresource_names              = ["redisCache"]
   }
+
   dynamic "ip_configuration" {
     for_each = each.value.ip_configurations
 
@@ -65,8 +68,6 @@ resource "azurerm_private_endpoint" "this_unmanaged_dns_zone_groups" {
     ignore_changes = [private_dns_zone_group]
   }
 }
-
-
 
 resource "azurerm_private_endpoint_application_security_group_association" "this" {
   for_each = local.private_endpoint_application_security_group_associations
