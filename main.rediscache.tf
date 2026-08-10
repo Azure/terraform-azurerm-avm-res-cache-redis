@@ -30,6 +30,7 @@ resource "azurerm_redis_cache" "this" {
       identity_ids = identity.value.user_assigned_resource_ids
     }
   }
+
   dynamic "patch_schedule" {
     for_each = tolist(var.patch_schedule)
 
@@ -39,6 +40,7 @@ resource "azurerm_redis_cache" "this" {
       start_hour_utc     = patch_schedule.value.start_hour_utc
     }
   }
+
   redis_configuration {
     active_directory_authentication_enabled = var.redis_configuration.active_directory_authentication_enabled
     aof_backup_enabled                      = var.redis_configuration.aof_backup_enabled
@@ -58,7 +60,6 @@ resource "azurerm_redis_cache" "this" {
     storage_account_subscription_id         = var.redis_configuration.storage_account_subscription_resource_id
   }
 }
-
 
 resource "azurerm_management_lock" "this" {
   count = var.lock != null ? 1 : 0
