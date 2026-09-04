@@ -39,6 +39,7 @@ resource "random_integer" "region_index" {
   max = length(module.regions.regions) - 1
   min = 0
 }
+
 ## End of section to provide a random Azure region for the resource group
 
 # This ensures we have unique CAF compliant names for our resources.
@@ -63,10 +64,10 @@ resource "azurerm_virtual_network" "this" {
 
 # create a subnet for the private endpoint
 resource "azurerm_subnet" "endpoint" {
-  address_prefixes     = ["10.0.2.0/24"]
   name                 = "endpoint"
   resource_group_name  = azurerm_resource_group.this.name
   virtual_network_name = azurerm_virtual_network.this.name
+  address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_private_dns_zone" "this" {
