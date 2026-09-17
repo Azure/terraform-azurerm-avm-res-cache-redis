@@ -107,7 +107,7 @@ module "default" {
       workspace_resource_id          = azurerm_log_analytics_workspace.this_workspace.id
     }
   }
-  enable_telemetry = var.enable_telemetry
+  enable_telemetry = false
   managed_identities = {
     system_assigned = true
   }
