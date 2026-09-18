@@ -114,7 +114,7 @@ module "default" {
       workspace_resource_id          = azurerm_log_analytics_workspace.this_workspace.id
     }
   }
-  enable_telemetry = false
+  enable_telemetry = var.enable_telemetry
   managed_identities = {
     system_assigned = true
   }
@@ -175,7 +175,7 @@ If it is set to false, then no telemetry will be collected.
 
 Type: `bool`
 
-Default: `true`
+Default: `false`
 
 ## Outputs
 
