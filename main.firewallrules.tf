@@ -8,4 +8,3 @@ resource "azurerm_redis_firewall_rule" "this" {
   resource_group_name = var.resource_group_name
   start_ip            = each.value.start_ip
 }
-
