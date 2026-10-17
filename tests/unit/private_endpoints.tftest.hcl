@@ -1,4 +1,11 @@
-mock_provider "azapi" {}
+mock_provider "azapi" {
+  mock_data "azapi_client_config" {
+    defaults = {
+      subscription_resource_id = "/subscriptions/00000000-0000-0000-0000-000000000000"
+    }
+  }
+}
+
 mock_provider "azurerm" {
   mock_resource "azurerm_redis_cache" {
     defaults = {
@@ -11,8 +18,8 @@ mock_provider "azurerm" {
     }
   }
 }
-mock_provider "modtm" {}
-mock_provider "random" {}
+
+mock_provider "terraform" {}
 
 variables {
   name                = "test"
@@ -23,10 +30,9 @@ variables {
 
 run "empty_defaults" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = apply
 
@@ -43,10 +49,9 @@ run "empty_defaults" {
 
 run "managed_defaults" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = apply
 
@@ -83,10 +88,9 @@ run "managed_defaults" {
 
 run "unmanaged_defaults" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = apply
 
@@ -120,10 +124,9 @@ run "unmanaged_defaults" {
 
 run "managed_overrides" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = apply
 
@@ -218,10 +221,9 @@ run "managed_overrides" {
 
 run "unmanaged_overrides" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = apply
 
@@ -274,10 +276,9 @@ run "unmanaged_overrides" {
 
 run "assignment_and_lock_defaults" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = apply
 
@@ -310,10 +311,9 @@ run "assignment_and_lock_defaults" {
 
 run "invalid_subnet" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = plan
 
@@ -328,10 +328,9 @@ run "invalid_subnet" {
 
 run "invalid_dns_zone" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = plan
 
@@ -349,10 +348,9 @@ run "invalid_dns_zone" {
 
 run "invalid_asg" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = plan
 
@@ -370,10 +368,9 @@ run "invalid_asg" {
 
 run "invalid_delegated_identity" {
   providers = {
-    azapi   = azapi
-    azurerm = azurerm
-    modtm   = modtm
-    random  = random
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
   }
   command = plan
 
@@ -393,4 +390,22 @@ run "invalid_delegated_identity" {
   }
 
   expect_failures = [var.private_endpoints]
+}
+
+run "metadata_backed_telemetry_enabled" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
+  command = apply
+
+  variables {
+    enable_telemetry = true
+  }
+
+  assert {
+    condition     = length(azapi_resource.telemetry) == 1 && length(terraform_data.telemetry) == 1 && length(data.azapi_client_config.telemetry) == 1
+    error_message = "Enabled metadata-backed telemetry must create its deployment, stable instance and client data using only mocked providers."
+  }
 }
