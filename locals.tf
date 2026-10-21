@@ -31,6 +31,15 @@ locals {
       }
     ]
   ]) : "${assoc.pe_key}-${assoc.asg_key}" => assoc }
+  private_endpoint_role_assignments = { for assignment in flatten([
+    for pe_key, endpoint in var.private_endpoints : [
+      for assignment_key, assignment in endpoint.role_assignments : {
+        key        = jsonencode([pe_key, assignment_key])
+        pe_key     = pe_key
+        assignment = assignment
+      }
+    ]
+  ]) : assignment.key => assignment }
   redis_cache_family                 = var.sku_name == "Basic" || var.sku_name == "Standard" ? "C" : "P"
   role_definition_resource_substring = "/providers/Microsoft.Authorization/roleDefinitions"
 }

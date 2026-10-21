@@ -2,6 +2,8 @@
 
 This module implements the AVM version of the Azure Cache for Redis and supporting resources.  It includes the standard AVM interfaces.
 
+Private endpoint role assignments and locks are applied when supplied; these settings were previously ignored. Existing endpoint and application security group association addresses are unchanged. Omitted IP configuration member names retain their existing DNS-managed or externally managed defaults; set `member_name` explicitly when required.
+
 > [!IMPORTANT]
 > As the overall AVM framework is not GA (generally available) yet - the CI framework and test automation is not fully functional and implemented across all supported languages yet - breaking changes are expected, and additional customer feedback is yet to be gathered and incorporated. Hence, modules **MUST NOT** be published at version `1.0.0` or higher at this time.
 > 

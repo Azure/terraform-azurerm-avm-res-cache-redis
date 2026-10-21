@@ -76,7 +76,8 @@ resource "azurerm_management_lock" "this" {
     azurerm_redis_cache_access_policy_assignment.this,
     azurerm_redis_firewall_rule.this,
     azurerm_redis_linked_server.this,
-    azurerm_role_assignment.this
+    azurerm_role_assignment.this,
+    azurerm_management_lock.private_endpoints
   ]
 }
 
