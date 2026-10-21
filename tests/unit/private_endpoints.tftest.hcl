@@ -29,6 +29,11 @@ variables {
 }
 
 run "empty_defaults" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = apply
 
   assert {
@@ -43,6 +48,11 @@ run "empty_defaults" {
 }
 
 run "managed_defaults" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = apply
 
   variables {
@@ -77,6 +87,11 @@ run "managed_defaults" {
 }
 
 run "unmanaged_defaults" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = apply
 
   variables {
@@ -108,6 +123,11 @@ run "unmanaged_defaults" {
 }
 
 run "managed_overrides" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = apply
 
   variables {
@@ -200,6 +220,11 @@ run "managed_overrides" {
 }
 
 run "unmanaged_overrides" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = apply
 
   variables {
@@ -250,6 +275,11 @@ run "unmanaged_overrides" {
 }
 
 run "assignment_and_lock_defaults" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = apply
 
   variables {
@@ -280,6 +310,11 @@ run "assignment_and_lock_defaults" {
 }
 
 run "invalid_subnet" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = plan
 
   variables {
@@ -292,6 +327,11 @@ run "invalid_subnet" {
 }
 
 run "invalid_dns_zone" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = plan
 
   variables {
@@ -307,6 +347,11 @@ run "invalid_dns_zone" {
 }
 
 run "invalid_asg" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = plan
 
   variables {
@@ -322,6 +367,11 @@ run "invalid_asg" {
 }
 
 run "invalid_delegated_identity" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = plan
 
   variables {
@@ -343,6 +393,11 @@ run "invalid_delegated_identity" {
 }
 
 run "metadata_backed_telemetry_enabled" {
+  providers = {
+    azapi     = azapi
+    azurerm   = azurerm
+    terraform = terraform
+  }
   command = apply
 
   variables {
